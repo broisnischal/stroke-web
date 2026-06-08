@@ -14,6 +14,8 @@ export const env = createEnv({
 
     // License key signing (Ed25519 private key hex, 32 bytes)
     LICENSE_PRIVATE_KEY_HEX: z.string().length(64),
+    // Admin API secret for license management
+    LICENSE_ADMIN_SECRET: z.string().min(32),
 
     // Dodo Payments
     DODO_PAYMENTS_API_KEY: z.string().min(1),

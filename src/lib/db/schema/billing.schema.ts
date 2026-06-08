@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 import { user } from "./auth.schema";
 
@@ -91,6 +91,29 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   }),
 }));
 
-export const licensesRelations = relations(licenses, ({ one }) => ({
+export const activations = sqliteTable(
+  "activations",
+  {
+    id: text("id").primaryKey(),
+    licenseId: text("license_id")
+      .notNull()
+      .references(() => licenses.id, { onDelete: "cascade" }),
+    deviceId: text("device_id").notNull(),
+    hostname: text("hostname"),
+    activatedAt: integer("activated_at", { mode: "timestamp_ms" }).notNull(),
+    lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("activations_license_id_idx").on(table.licenseId),
+    uniqueIndex("activations_license_device_uniq").on(table.licenseId, table.deviceId),
+  ],
+);
+
+export const licensesRelations = relations(licenses, ({ one, many }) => ({
   user: one(user, { fields: [licenses.userId], references: [user.id] }),
+  activations: many(activations),
+}));
+
+export const activationsRelations = relations(activations, ({ one }) => ({
+  license: one(licenses, { fields: [activations.licenseId], references: [licenses.id] }),
 }));

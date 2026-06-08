@@ -1,4 +1,5 @@
 name = "stroke-web"
+account_id = "16b2c363a412bfaaec2a5a2572964728"
 compatibility_date = "2025-10-01"
 main = "@tanstack/react-start/server-entry"
 compatibility_flags = ["nodejs_compat"]
