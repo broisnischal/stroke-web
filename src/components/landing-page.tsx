@@ -17,12 +17,14 @@ import {
   PencilLineIcon,
   PlugIcon,
   SearchIcon,
+  ShieldCheckIcon,
   SparklesIcon,
   TablePropertiesIcon,
   TerminalIcon,
 } from "lucide-react";
 import { useState } from "react";
 
+import Features01 from "#/components/blocks/features-01";
 import { SmartDownloadButton } from "#/components/download-button";
 import { ThemeToggle } from "#/components/theme-toggle";
 import { Button, buttonVariants } from "#/components/ui/button";
@@ -42,6 +44,7 @@ export function LandingPage() {
       <SiteHeader />
       <main>
         <Hero />
+        <Features01 />
         <Databases />
         <Features />
         <Pricing />
@@ -125,7 +128,11 @@ function Hero() {
   return (
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,color-mix(in_oklch,var(--primary),transparent_85%),transparent)]" />
-      <div className="mx-auto max-w-3xl px-4 pt-20 pb-16 text-center md:pt-28">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--foreground),transparent_96%)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--foreground),transparent_96%)_1px,transparent_1px)] [mask-image:radial-gradient(60%_60%_at_50%_0%,black,transparent)] bg-[size:36px_36px]"
+      />
+      <div className="mx-auto max-w-3xl px-4 pt-20 pb-12 text-center md:pt-28">
         <a
           href={REPO_URL}
           target="_blank"
@@ -153,8 +160,88 @@ function Hero() {
           </a>
           <SmartDownloadButton size="lg" />
         </div>
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          Pay what you want · macOS, Windows &amp; Linux · Lifetime license
+        </p>
       </div>
+
+      <AppPreview />
     </section>
+  );
+}
+
+const PREVIEW_TABLES = ["users", "orders", "products", "sessions", "invoices"];
+const PREVIEW_ROWS = [
+  ["1024", "ada@stroke.dev", "active", "2024-11-02"],
+  ["1025", "linus@stroke.dev", "active", "2024-11-04"],
+  ["1026", "grace@stroke.dev", "invited", "2024-11-07"],
+  ["1027", "alan@stroke.dev", "active", "2024-11-09"],
+];
+
+function AppPreview() {
+  return (
+    <div className="mx-auto max-w-5xl px-4 pb-16">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xl ring-1 shadow-primary/5 ring-border/50">
+        <div className="flex items-center gap-2 border-b border-border/60 bg-muted/40 px-4 py-3">
+          <span className="size-3 rounded-full bg-destructive/60" />
+          <span className="size-3 rounded-full bg-primary/40" />
+          <span className="size-3 rounded-full bg-muted-foreground/30" />
+          <div className="ml-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <DatabaseIcon className="size-3.5 text-primary" />
+            production · postgres
+          </div>
+        </div>
+        <div className="grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]">
+          <div className="hidden flex-col gap-1 border-r border-border/60 p-3 sm:flex">
+            <p className="px-2 pb-1 text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+              Tables
+            </p>
+            {PREVIEW_TABLES.map((table, i) => (
+              <div
+                key={table}
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
+                  i === 0 ? "bg-primary/10 text-primary" : "text-muted-foreground",
+                )}
+              >
+                <TablePropertiesIcon className="size-3.5 shrink-0" />
+                {table}
+              </div>
+            ))}
+          </div>
+          <div className="overflow-hidden p-3">
+            <div className="overflow-hidden rounded-lg border border-border/60">
+              <div className="grid grid-cols-4 border-b border-border/60 bg-muted/40 text-left text-[11px] font-medium text-muted-foreground">
+                {["id", "email", "status", "created_at"].map((col) => (
+                  <div key={col} className="px-3 py-2">
+                    {col}
+                  </div>
+                ))}
+              </div>
+              {PREVIEW_ROWS.map((row) => (
+                <div
+                  key={row[0]}
+                  className="grid grid-cols-4 border-b border-border/40 text-xs last:border-0 hover:bg-muted/30"
+                >
+                  {row.map((cell, ci) => (
+                    <div
+                      key={ci}
+                      className={cn(
+                        "truncate px-3 py-2.5",
+                        ci === 0 ? "font-mono text-muted-foreground" : "text-foreground",
+                      )}
+                    >
+                      {cell}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -171,7 +258,10 @@ function Databases() {
     <section id="databases" className="border-y border-border/60 bg-card/40">
       <div className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-10 text-center">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <span className="font-mono text-[11px] tracking-widest text-muted-foreground uppercase">
+            Connections
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
             One studio, every database
           </h2>
           <p className="mt-2 text-muted-foreground">
@@ -249,7 +339,10 @@ function Features() {
   return (
     <section id="features" className="mx-auto max-w-6xl px-4 py-20">
       <div className="mb-12 text-center">
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <span className="font-mono text-[11px] tracking-widest text-muted-foreground uppercase">
+          Features
+        </span>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
           Everything you need to work with data
         </h2>
         <p className="mt-2 text-muted-foreground">
@@ -288,33 +381,62 @@ function Pricing() {
 
   return (
     <section id="pricing" className="border-t border-border/60">
-      <div className="mx-auto max-w-2xl px-4 py-20">
+      <div className="mx-auto max-w-4xl px-4 py-20">
         <div className="mb-10 text-center">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Pay what you want</h2>
+          <span className="font-mono text-[11px] tracking-widest text-muted-foreground uppercase">
+            Pricing
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Pay what you want</h2>
           <p className="mt-2 text-muted-foreground">
             Minimum ${MIN_PRICE_USD} — pay more to support development. One license, every feature.
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-border bg-card ring-1 ring-border/50 transition-shadow focus-within:ring-ring/30">
-          <div className="h-1 bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xl ring-1 shadow-primary/5 ring-border/50">
+          <div className="grid md:grid-cols-2">
+            <div className="relative flex flex-col gap-6 border-b border-border/60 bg-gradient-to-br from-primary/10 via-card to-card p-8 md:border-r md:border-b-0">
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                <KeyRoundIcon className="size-3.5" />
+                Stroke Pro · Lifetime
+              </span>
 
-          <div className="space-y-8 p-6 sm:p-8">
-            <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Choose an amount</p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-5xl font-bold tracking-tight tabular-nums">
+                    ${isValid ? amount : MIN_PRICE_USD}
+                  </span>
+                  <span className="text-sm text-muted-foreground">one-time</span>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Pay once, own it forever. No subscription, no seats.
+                </p>
+              </div>
+
+              <ul className="grid gap-3">
+                {LICENSE_PERKS.map((perk) => (
+                  <li key={perk} className="flex items-start gap-3 text-sm">
+                    <CheckIcon className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>{perk}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-6 p-8">
+              <div>
+                <p className="text-sm font-medium">Choose an amount</p>
+                <div className="mt-3 grid grid-cols-4 gap-2">
                   {PRESET_AMOUNTS.map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setAmount(preset)}
+                      aria-pressed={amount === preset}
                       className={cn(
-                        buttonVariants({
-                          variant: amount === preset ? "default" : "outline",
-                          size: "default",
-                        }),
-                        "min-w-[4.5rem]",
+                        "rounded-lg border px-3 py-2.5 text-sm font-medium tabular-nums transition-colors",
+                        amount === preset
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
                       )}
                     >
                       ${preset}
@@ -324,10 +446,7 @@ function Pricing() {
               </div>
 
               <div>
-                <label
-                  htmlFor="custom-amount"
-                  className="text-sm font-medium text-muted-foreground"
-                >
+                <label htmlFor="custom-amount" className="text-sm font-medium">
                   Or enter a custom amount
                 </label>
                 <div className="relative mt-2">
@@ -352,28 +471,19 @@ function Pricing() {
                   <p className="mt-2 text-sm text-destructive">Minimum is ${MIN_PRICE_USD}</p>
                 )}
               </div>
-            </div>
 
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {LICENSE_PERKS.map((perk) => (
-                <li key={perk} className="flex items-start gap-3 text-sm">
-                  <CheckIcon className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <span>{perk}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="space-y-3 border-t border-border/60 pt-6">
-              <BuyLicenseButton
-                amountUsd={amount}
-                disabled={!isValid}
-                size="lg"
-                className="w-full"
-              />
-              <p className="text-center text-xs text-muted-foreground">
-                Secure checkout via Dodo Payments. You&apos;ll need an account so we can deliver
-                your license key.
-              </p>
+              <div className="mt-auto space-y-3 border-t border-border/60 pt-6">
+                <BuyLicenseButton
+                  amountUsd={amount}
+                  disabled={!isValid}
+                  size="lg"
+                  className="w-full"
+                />
+                <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+                  <ShieldCheckIcon className="size-3.5 shrink-0" />
+                  Secure checkout via Dodo Payments — account required for key delivery.
+                </p>
+              </div>
             </div>
           </div>
         </div>

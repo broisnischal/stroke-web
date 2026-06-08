@@ -47,7 +47,7 @@
     "clsx": "2.1.1",
     "dodopayments": "^2.36.0",
     "drizzle-orm": "0.45.2",
-    "lucide-react": "1.17.0",
+    "lucide-react": "^1.17.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "shadcn": "4.10.0",
