@@ -1,0 +1,32 @@
+name = "stroke-web"
+compatibility_date = "2025-10-01"
+main = "@tanstack/react-start/server-entry"
+compatibility_flags = ["nodejs_compat"]
+preview_urls = true
+
+# Official custom domain (zone already configured in Cloudflare)
+routes = [{ pattern = "stroke.click", custom_domain = true }]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "stroke-web"
+database_id = "9b155570-5614-4d21-b61c-6eb98bb365cd"
+migrations_dir = "drizzle"
+
+[vars]
+VITE_BASE_URL = "https://stroke.click"
+DODO_ENVIRONMENT = "test_mode"
+# Secrets: set via wrangler secret put <NAME>
+# DODO_PAYMENTS_API_KEY, DODO_WEBHOOK_KEY, DODO_PRODUCT_ID, LICENSE_PRIVATE_KEY_HEX
+
+[assets]
+directory = "./public"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true

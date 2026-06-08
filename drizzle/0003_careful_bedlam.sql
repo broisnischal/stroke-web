@@ -1,0 +1,1 @@
+ALTER TABLE `licenses` ADD `expires_at` integer;
