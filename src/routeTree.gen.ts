@@ -23,6 +23,8 @@ import { Route as ApiLicenseCheckRouteImport } from './routes/api/license/check'
 import { Route as ApiLicenseActivateRouteImport } from './routes/api/license/activate'
 import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthAppSupportRouteImport } from './routes/_auth/app/support'
+import { Route as AuthAppDownloadsRouteImport } from './routes/_auth/app/downloads'
 import { Route as AuthAppBillingRouteImport } from './routes/_auth/app/billing'
 import { Route as ApiAdminLicenseUnrevokeRouteImport } from './routes/api/admin/license/unrevoke'
 import { Route as ApiAdminLicenseRevokeRouteImport } from './routes/api/admin/license/revoke'
@@ -96,6 +98,16 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthAppSupportRoute = AuthAppSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AuthAppRouteRoute,
+} as any)
+const AuthAppDownloadsRoute = AuthAppDownloadsRouteImport.update({
+  id: '/downloads',
+  path: '/downloads',
+  getParentRoute: () => AuthAppRouteRoute,
+} as any)
 const AuthAppBillingRoute = AuthAppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -123,6 +135,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof GuestLoginRoute
   '/signup': typeof GuestSignupRoute
   '/app/billing': typeof AuthAppBillingRoute
+  '/app/downloads': typeof AuthAppDownloadsRoute
+  '/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
@@ -140,6 +154,8 @@ export interface FileRoutesByTo {
   '/login': typeof GuestLoginRoute
   '/signup': typeof GuestSignupRoute
   '/app/billing': typeof AuthAppBillingRoute
+  '/app/downloads': typeof AuthAppDownloadsRoute
+  '/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
@@ -161,6 +177,8 @@ export interface FileRoutesById {
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/signup': typeof GuestSignupRoute
   '/_auth/app/billing': typeof AuthAppBillingRoute
+  '/_auth/app/downloads': typeof AuthAppDownloadsRoute
+  '/_auth/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
@@ -181,6 +199,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/app/billing'
+    | '/app/downloads'
+    | '/app/support'
     | '/api/auth/$'
     | '/api/billing/checkout'
     | '/api/license/activate'
@@ -198,6 +218,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/app/billing'
+    | '/app/downloads'
+    | '/app/support'
     | '/api/auth/$'
     | '/api/billing/checkout'
     | '/api/license/activate'
@@ -218,6 +240,8 @@ export interface FileRouteTypes {
     | '/_guest/login'
     | '/_guest/signup'
     | '/_auth/app/billing'
+    | '/_auth/app/downloads'
+    | '/_auth/app/support'
     | '/api/auth/$'
     | '/api/billing/checkout'
     | '/api/license/activate'
@@ -347,6 +371,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/app/support': {
+      id: '/_auth/app/support'
+      path: '/support'
+      fullPath: '/app/support'
+      preLoaderRoute: typeof AuthAppSupportRouteImport
+      parentRoute: typeof AuthAppRouteRoute
+    }
+    '/_auth/app/downloads': {
+      id: '/_auth/app/downloads'
+      path: '/downloads'
+      fullPath: '/app/downloads'
+      preLoaderRoute: typeof AuthAppDownloadsRouteImport
+      parentRoute: typeof AuthAppRouteRoute
+    }
     '/_auth/app/billing': {
       id: '/_auth/app/billing'
       path: '/billing'
@@ -380,11 +418,15 @@ declare module '@tanstack/react-router' {
 
 interface AuthAppRouteRouteChildren {
   AuthAppBillingRoute: typeof AuthAppBillingRoute
+  AuthAppDownloadsRoute: typeof AuthAppDownloadsRoute
+  AuthAppSupportRoute: typeof AuthAppSupportRoute
   AuthAppIndexRoute: typeof AuthAppIndexRoute
 }
 
 const AuthAppRouteRouteChildren: AuthAppRouteRouteChildren = {
   AuthAppBillingRoute: AuthAppBillingRoute,
+  AuthAppDownloadsRoute: AuthAppDownloadsRoute,
+  AuthAppSupportRoute: AuthAppSupportRoute,
   AuthAppIndexRoute: AuthAppIndexRoute,
 }
 

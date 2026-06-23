@@ -1,7 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet, useMatchRoute, useRouter } from "@tanstack/react-router";
-import { DatabaseIcon, HomeIcon, KeyRoundIcon, LogOutIcon } from "lucide-react";
+import { DownloadIcon, HelpCircleIcon, LayoutDashboardIcon, LogOutIcon } from "lucide-react";
 
+import { StrokeIcon } from "#/components/stroke-icon";
 import { ThemeToggle } from "#/components/theme-toggle";
 import { authClient } from "#/lib/auth/auth-client";
 import { useAuth } from "#/lib/auth/hooks";
@@ -12,8 +13,9 @@ export const Route = createFileRoute("/_auth/app")({
 });
 
 const NAV_ITEMS = [
-  { to: "/app" as const, label: "Overview", icon: HomeIcon, exact: true },
-  { to: "/app/billing" as const, label: "License & Billing", icon: KeyRoundIcon, exact: false },
+  { to: "/app" as const, label: "Dashboard", icon: LayoutDashboardIcon, exact: true },
+  { to: "/app/downloads" as const, label: "Downloads", icon: DownloadIcon, exact: false },
+  { to: "/app/support" as const, label: "Support", icon: HelpCircleIcon, exact: false },
 ];
 
 function NavLink({
@@ -22,7 +24,7 @@ function NavLink({
   icon: Icon,
   exact,
 }: {
-  to: "/app" | "/app/billing";
+  to: "/app" | "/app/downloads" | "/app/support";
   label: string;
   icon: React.ElementType;
   exact: boolean;
@@ -34,13 +36,13 @@ function NavLink({
     <Link
       to={to}
       className={[
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
         isActive
-          ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:bg-accent hover:text-foreground",
+          ? "bg-foreground/8 font-medium text-foreground"
+          : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
       ].join(" ")}
     >
-      <Icon className="size-4 shrink-0" />
+      <Icon className="size-3.5 shrink-0" />
       {label}
     </Link>
   );
@@ -49,6 +51,7 @@ function NavLink({
 function SidebarSignOut() {
   const queryClient = useQueryClient();
   const router = useRouter();
+
   return (
     <button
       type="button"
@@ -62,7 +65,7 @@ function SidebarSignOut() {
           },
         });
       }}
-      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
     >
       <LogOutIcon className="size-3.5 shrink-0" />
       Sign out
@@ -72,35 +75,35 @@ function SidebarSignOut() {
 
 function AppLayout() {
   const { user } = useAuth();
+  const initial = user?.name?.[0]?.toUpperCase() ?? "?";
 
   return (
     <div className="flex min-h-svh bg-background">
       {/* Sidebar */}
-      <aside className="hidden w-60 shrink-0 border-r border-border/60 md:flex md:flex-col">
-        {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b border-border/60 px-4">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <DatabaseIcon className="size-4" />
-          </span>
-          <span className="text-sm font-semibold tracking-tight">Stroke</span>
+      <aside className="hidden w-52 shrink-0 flex-col border-r border-border/40 md:flex">
+        <div className="flex h-11 items-center gap-2 border-b border-border/40 px-4">
+          <Link to="/" className="flex items-center gap-2 text-foreground">
+            <StrokeIcon className="size-4" />
+            <span className="text-sm font-semibold tracking-tight">Stroke</span>
+          </Link>
         </div>
 
-        {/* Nav */}
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.to} {...item} />
           ))}
         </nav>
 
-        {/* User footer */}
-        <div className="border-t border-border/60 p-3">
-          <div className="mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary uppercase">
-              {user?.name?.[0] ?? "?"}
+        <div className="border-t border-border/40 p-2">
+          <div className="mb-0.5 flex items-center gap-2.5 rounded-md px-2.5 py-2">
+            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/8 text-[10px] font-semibold text-muted-foreground uppercase ring-1 ring-border/60">
+              {initial}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-xs font-medium">{user?.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+              <p className="truncate text-xs leading-tight font-medium">{user?.name}</p>
+              <p className="truncate text-[10px] leading-tight text-muted-foreground">
+                {user?.email}
+              </p>
             </div>
           </div>
           <SidebarSignOut />
@@ -109,28 +112,24 @@ function AppLayout() {
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/60 px-4 md:px-6">
+        <header className="flex h-11 shrink-0 items-center justify-between border-b border-border/40 px-5">
           <div className="flex items-center gap-2 md:hidden">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <DatabaseIcon className="size-4" />
-            </span>
+            <StrokeIcon className="size-4" />
             <span className="text-sm font-semibold">Stroke</span>
           </div>
-          <div className="hidden items-center gap-1 text-sm text-muted-foreground md:flex">
+          <div className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex">
             <Link to="/" className="transition-colors hover:text-foreground">
-              Home
+              stroke.click
             </Link>
-            <span className="mx-1">/</span>
-            <span className="text-foreground">App</span>
+            <span className="opacity-40">/</span>
+            <span className="text-foreground">app</span>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto">
             <ThemeToggle />
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto px-6 py-8 md:px-10 md:py-10">
           <Outlet />
         </main>
       </div>

@@ -32,21 +32,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        // scaffold:title
-        title: "TanStarter",
+        title: "Stroke — A fast, modern desktop database client",
       },
       {
         name: "description",
-        // scaffold:description
-        content: "A minimal starter template for 🏝️ TanStack Start.",
+        content:
+          "Connect to PostgreSQL, MySQL, SQLite, Turso/LibSQL, and Cloudflare D1. Browse schemas, edit data inline, write SQL, and let AI talk to your database via MCP.",
       },
     ],
     links: [
-      // Replace with your icons here, or remove if you have a favicon.ico in public/
-      {
-        rel: "icon",
-        href: "https://mugnavo.com/favicon.ico",
-      },
+      { rel: "icon", type: "image/png", href: "/icon.png" },
+      { rel: "apple-touch-icon", href: "/icon.png" },
       { rel: "stylesheet", href: appCss },
     ],
   }),

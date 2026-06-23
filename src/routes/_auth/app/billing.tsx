@@ -1,21 +1,23 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation } from "@tanstack/react-router";
 import {
-  CheckCircleIcon,
+  ArrowRightIcon,
   CheckIcon,
   CopyIcon,
-  CreditCardIcon,
+  EyeIcon,
+  EyeOffIcon,
   KeyRoundIcon,
   Loader2Icon,
-  ShieldCheckIcon,
-  XCircleIcon,
+  MonitorIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "#/components/ui/button";
+import { SmartDownloadButton } from "#/components/download-button";
+import { buttonVariants } from "#/components/ui/button";
 import {
   $createCheckoutSession,
+  $recoverLicense,
   billingQueryOptions,
   licenseQueryOptions,
 } from "#/lib/billing/functions";
@@ -28,40 +30,43 @@ export const Route = createFileRoute("/_auth/app/billing")({
   component: BillingPage,
 });
 
-const LICENSE_PERKS = [
-  "All databases & AI features unlocked",
-  "Built-in MCP server for Claude & Cursor",
-  "Use on macOS, Windows, and Linux",
-  "Lifetime license with free updates",
-];
-
 function BillingPage() {
   const location = useLocation();
   const success = new URLSearchParams(location.search).get("success") === "true";
   const queryClient = useQueryClient();
 
-  // Use plain useQuery (not suspense) so refetch doesn't remount the whole page
   const { data: subscription } = useQuery(billingQueryOptions());
   const { data: license } = useQuery(licenseQueryOptions());
 
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showKey, setShowKey] = useState(false);
   const [pollExpired, setPollExpired] = useState(false);
+  const [recovering, setRecovering] = useState(false);
 
   const isActive = subscription?.status === "active";
+  const stillWaiting = success && !license && !pollExpired;
 
-  // When redirected after payment, poll every 2 s (up to 30 s) until the
-  // webhook has fired and the license row is created.
   useEffect(() => {
     if (!success || license) return;
 
+    const sessionId = sessionStorage.getItem("dodo_session_id") ?? undefined;
     let attempts = 0;
-    const MAX = 15; // 15 × 2 s = 30 s
 
     const id = setInterval(async () => {
       attempts++;
-      await queryClient.invalidateQueries({ queryKey: ["billing"] });
-      if (attempts >= MAX) {
+      await queryClient.refetchQueries({ queryKey: ["billing"] });
+
+      if (attempts === 1 || attempts === 5 || attempts === 10) {
+        try {
+          await $recoverLicense({ data: { sessionId } });
+          await queryClient.refetchQueries({ queryKey: ["billing"] });
+        } catch {
+          // keep polling
+        }
+      }
+
+      if (attempts >= 15) {
         clearInterval(id);
         setPollExpired(true);
       }
@@ -70,13 +75,30 @@ function BillingPage() {
     return () => clearInterval(id);
   }, [success, license, queryClient]);
 
+  async function handleManualRefresh() {
+    setRecovering(true);
+    try {
+      const sessionId = sessionStorage.getItem("dodo_session_id") ?? undefined;
+      await $recoverLicense({ data: { sessionId } });
+      await queryClient.refetchQueries({ queryKey: ["billing"] });
+      setPollExpired(false);
+    } catch {
+      // ignore
+    } finally {
+      setRecovering(false);
+    }
+  }
+
   async function handleUpgrade() {
     setLoading(true);
     try {
-      const { checkoutUrl } = await $createCheckoutSession();
+      const { checkoutUrl, sessionId } = await $createCheckoutSession();
+      sessionStorage.setItem("dodo_session_id", sessionId);
       window.location.href = checkoutUrl;
-    } catch {
-      toast.error("Failed to start checkout. Please try again.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to start checkout. Please try again.",
+      );
       setLoading(false);
     }
   }
@@ -85,84 +107,227 @@ function BillingPage() {
     if (!license?.licenseKey) return;
     await navigator.clipboard.writeText(license.licenseKey);
     setCopied(true);
+    toast.success("License key copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const stillWaiting = success && !license && !pollExpired;
-
-  return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <CreditCardIcon className="size-5" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">License &amp; Billing</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Manage your Stroke Pro license and purchase details.
-          </p>
-        </div>
-      </div>
-
-      {/* Post-payment success banner */}
-      {success && (
+  // ── Post-payment activation flow ──────────────────────────────────────────
+  if (success) {
+    return (
+      <div className="mx-auto max-w-md space-y-8 pt-4">
+        {/* Status banner */}
         <div
           className={[
-            "flex items-start gap-3 rounded-xl border px-4 py-3 text-sm",
+            "flex items-start gap-3 rounded-md border px-4 py-3 text-sm",
             license
-              ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
+              ? "border-emerald-500/20 bg-emerald-500/6 text-emerald-500"
               : pollExpired
-                ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
-                : "border-primary/30 bg-primary/5 text-foreground",
+                ? "border-amber-500/20 bg-amber-500/6 text-amber-500"
+                : "border-border/40 text-muted-foreground",
           ].join(" ")}
         >
           {license ? (
-            <CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-green-500" />
+            <CheckIcon className="mt-0.5 size-4 shrink-0" />
           ) : (
-            <Loader2Icon className="mt-0.5 size-4 shrink-0 animate-spin text-primary" />
+            <Loader2Icon className="mt-0.5 size-4 shrink-0 animate-spin" />
           )}
-          <span>
-            {license
-              ? "Payment confirmed — your license key is ready below."
-              : pollExpired
-                ? "Still processing — your key will appear here once confirmed. Try refreshing in a moment."
-                : "Payment received! Generating your license key…"}
-          </span>
+          <div>
+            {license ? (
+              <>
+                <p className="font-medium">Payment confirmed</p>
+                <p className="mt-0.5 text-[11px] opacity-80">
+                  Your license is ready. Activate it in Stroke → Settings → License.
+                </p>
+              </>
+            ) : pollExpired ? (
+              <>
+                <p className="font-medium">Still processing</p>
+                <p className="mt-0.5 text-[11px] opacity-80">
+                  This can take a moment.{" "}
+                  <button
+                    type="button"
+                    onClick={handleManualRefresh}
+                    disabled={recovering}
+                    className="underline underline-offset-2 transition-opacity hover:opacity-70 disabled:opacity-40"
+                  >
+                    {recovering ? "Checking…" : "Refresh now"}
+                  </button>
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-medium">Generating your license…</p>
+                <p className="mt-0.5 text-[11px] opacity-70">Usually takes a few seconds.</p>
+              </>
+            )}
+          </div>
         </div>
-      )}
+
+        {/* License key */}
+        {license ? (
+          <section className="space-y-2.5">
+            <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
+              Your license key
+            </p>
+            <div className="overflow-hidden rounded-md border border-border/40">
+              <div className="flex items-center justify-between border-b border-border/30 px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <KeyRoundIcon className="size-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium capitalize">{license.plan} license</span>
+                  <span className="text-xs text-muted-foreground">
+                    · {license.maxDevices} seats
+                  </span>
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
+                  <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+                  Active
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-foreground/[0.025] px-4 py-2.5">
+                <code className="min-w-0 flex-1 truncate font-mono text-xs tracking-wide text-foreground/80">
+                  {showKey ? license.licenseKey : license.licenseKey.slice(0, 6) + "•".repeat(42)}
+                </code>
+                <button
+                  type="button"
+                  onClick={() => setShowKey((v) => !v)}
+                  title={showKey ? "Hide key" : "Reveal key"}
+                  className="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+                >
+                  {showKey ? <EyeOffIcon className="size-3.5" /> : <EyeIcon className="size-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={copyKey}
+                  className="flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+                >
+                  {copied ? (
+                    <>
+                      <CheckIcon className="size-3.5 text-emerald-500" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <CopyIcon className="size-3.5" />
+                      Copy
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="border-t border-border/30 px-4 py-3 text-xs text-muted-foreground">
+                <p className="flex items-center gap-1.5">
+                  <MonitorIcon className="size-3 shrink-0" />
+                  {license.expiresAt
+                    ? `Test license · expires ${new Date(license.expiresAt).toLocaleDateString()}`
+                    : "Lifetime — no expiry, no renewals"}
+                </p>
+              </div>
+            </div>
+          </section>
+        ) : stillWaiting ? (
+          <div className="flex items-center gap-2.5 rounded-md border border-border/40 px-4 py-3 text-sm text-muted-foreground">
+            <Loader2Icon className="size-4 animate-spin" />
+            Generating license key…
+          </div>
+        ) : null}
+
+        {/* Activation steps */}
+        {license && (
+          <section className="space-y-2.5">
+            <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
+              Activate in 3 steps
+            </p>
+            <ol className="space-y-2">
+              {[
+                {
+                  step: "Download Stroke if you haven't already",
+                  action: <SmartDownloadButton size="sm" />,
+                },
+                { step: "Open Stroke → Settings → License", action: null },
+                { step: "Paste your key and press Activate", action: null },
+              ].map(({ step, action }, i) => (
+                <li
+                  key={i}
+                  className="flex items-center justify-between gap-3 rounded-md border border-border/30 px-4 py-2.5"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[10px] text-muted-foreground/60">{i + 1}</span>
+                    <span className="text-sm">{step}</span>
+                  </div>
+                  {action}
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        {/* CTA */}
+        <div className="flex items-center gap-3 pt-1">
+          <Link
+            to="/app"
+            className={buttonVariants({ variant: license ? "default" : "outline", size: "sm" })}
+          >
+            Go to dashboard
+            <ArrowRightIcon className="size-3.5" />
+          </Link>
+          {!license && (
+            <span className="text-xs text-muted-foreground">
+              Your key will appear here once confirmed
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Default billing page (no ?success=true) ───────────────────────────────
+  return (
+    <div className="mx-auto max-w-md space-y-8">
+      <div>
+        <h1 className="text-base font-semibold tracking-tight">License &amp; Billing</h1>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {isActive ? "Your Pro license is active." : "Get lifetime access to Stroke Pro."}
+        </p>
+      </div>
 
       {isActive && license ? (
-        /* Active license — prominent key card */
-        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm ring-1 ring-border/50">
-          <div className="flex items-center gap-3 border-b border-border/60 bg-gradient-to-br from-primary/10 via-card to-card px-6 py-5">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <KeyRoundIcon className="size-5" />
+        <section className="space-y-2.5">
+          <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
+            License key
+          </p>
+          <div className="overflow-hidden rounded-md border border-border/40">
+            <div className="flex items-center justify-between border-b border-border/30 px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <KeyRoundIcon className="size-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium capitalize">{license.plan} license</span>
+                <span className="text-xs text-muted-foreground">· {license.maxDevices} seats</span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
+                <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+                Active
+              </span>
             </div>
-            <div>
-              <h2 className="font-semibold">Your license key</h2>
-              <p className="text-xs text-muted-foreground">
-                Valid for up to {license.maxDevices} devices
-              </p>
-            </div>
-            <span className="ml-auto flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-600 dark:text-green-400">
-              <CheckCircleIcon className="size-3" />
-              Active
-            </span>
-          </div>
-
-          <div className="space-y-4 p-6">
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-3">
-              <code className="flex-1 truncate font-mono text-sm tracking-tight">
-                {license.licenseKey}
+            <div className="flex items-center gap-1.5 bg-foreground/[0.025] px-4 py-2.5">
+              <code className="min-w-0 flex-1 truncate font-mono text-xs tracking-wide text-foreground/80">
+                {showKey ? license.licenseKey : license.licenseKey.slice(0, 6) + "•".repeat(42)}
               </code>
               <button
                 type="button"
+                onClick={() => setShowKey((v) => !v)}
+                title={showKey ? "Hide key" : "Reveal key"}
+                className="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+              >
+                {showKey ? <EyeOffIcon className="size-3.5" /> : <EyeIcon className="size-3.5" />}
+              </button>
+              <button
+                type="button"
                 onClick={copyKey}
-                className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
               >
                 {copied ? (
                   <>
-                    <CheckCircleIcon className="size-3.5 text-green-500" />
+                    <CheckIcon className="size-3.5 text-emerald-500" />
                     Copied
                   </>
                 ) : (
@@ -173,141 +338,54 @@ function BillingPage() {
                 )}
               </button>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Enter this key in{" "}
-              <strong className="text-foreground">Stroke → Settings → License</strong> to activate
-              your devices.
-            </p>
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-border/60 pt-4 text-xs text-muted-foreground">
-              <span>
-                Issued {license.issuedAt ? new Date(license.issuedAt).toLocaleDateString() : "—"}
-              </span>
-              <span className="text-border">·</span>
-              <span>
-                {license.expiresAt
-                  ? `Test license — expires ${new Date(license.expiresAt).toLocaleDateString()}`
-                  : "Lifetime, no expiry"}
-              </span>
-            </p>
-          </div>
-        </section>
-      ) : stillWaiting ? (
-        /* Awaiting webhook confirmation */
-        <section className="rounded-2xl border border-border bg-card p-6 ring-1 ring-border/50">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Loader2Icon className="size-4 animate-spin text-primary" />
-            Your license key is being generated…
+            <div className="border-t border-border/30 px-4 py-3 text-xs text-muted-foreground">
+              <p>
+                Open <strong className="font-medium text-foreground">Stroke</strong> →{" "}
+                <strong className="font-medium text-foreground">Settings → License</strong> and
+                paste your key to activate.
+              </p>
+            </div>
           </div>
         </section>
       ) : (
-        /* Upsell — no active license */
-        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm ring-1 ring-border/50">
-          <div className="flex items-center gap-3 border-b border-border/60 bg-gradient-to-br from-primary/10 via-card to-card px-6 py-5">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <KeyRoundIcon className="size-5" />
-            </div>
-            <div>
-              <h2 className="font-semibold">Unlock Stroke Pro</h2>
-              <p className="text-xs text-muted-foreground">
-                One-time purchase · key valid for up to 2 devices
+        <section className="space-y-2.5">
+          <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
+            Stroke Pro · Lifetime
+          </p>
+          <div className="overflow-hidden rounded-md border border-border/40">
+            <div className="space-y-3 px-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                One-time purchase. All features, all platforms, free updates forever.
               </p>
+              <ul className="space-y-1.5 text-xs text-muted-foreground">
+                {[
+                  "All databases — Postgres, MySQL, SQLite, MongoDB, Redis",
+                  "Built-in MCP server for Claude &amp; Cursor",
+                  "macOS, Windows, Linux",
+                  "Lifetime access · free updates forever",
+                ].map((perk) => (
+                  <li key={perk} className="flex items-start gap-2">
+                    <span className="mt-px font-mono text-muted-foreground/50">—</span>
+                    <span dangerouslySetInnerHTML={{ __html: perk }} />
+                  </li>
+                ))}
+              </ul>
             </div>
-            <span className="ml-auto flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-              <XCircleIcon className="size-3" />
-              No license
-            </span>
-          </div>
-
-          <div className="space-y-5 p-6">
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {LICENSE_PERKS.map((perk) => (
-                <li key={perk} className="flex items-start gap-2.5 text-sm">
-                  <CheckIcon className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <span>{perk}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="space-y-3 border-t border-border/60 pt-5">
-              <Button
+            <div className="flex items-center justify-between border-t border-border/30 px-4 py-3">
+              <p className="text-xs text-muted-foreground">Secure checkout via Dodo Payments</p>
+              <button
+                type="button"
                 onClick={handleUpgrade}
                 disabled={loading}
-                size="lg"
-                className="w-full sm:w-auto"
+                className={buttonVariants({ size: "sm" })}
               >
-                <KeyRoundIcon className="size-4" />
-                {loading ? "Redirecting…" : "Buy Pro license"}
-              </Button>
-              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <ShieldCheckIcon className="size-3.5 shrink-0" />
-                Secure checkout via Dodo Payments.
-              </p>
+                <KeyRoundIcon className="size-3.5" />
+                {loading ? "Redirecting…" : "Buy license"}
+              </button>
             </div>
           </div>
         </section>
       )}
-
-      {/* Purchase details */}
-      <section className="rounded-2xl border border-border bg-card ring-1 ring-border/50">
-        <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <CreditCardIcon className="size-4" />
-          </div>
-          <h2 className="font-semibold">Purchase details</h2>
-        </div>
-
-        <div className="p-6">
-          {subscription ? (
-            <dl className="divide-y divide-border/60 text-sm">
-              <div className="flex items-center justify-between py-2.5 first:pt-0">
-                <dt className="text-muted-foreground">Plan</dt>
-                <dd className="font-medium capitalize">{subscription.plan}</dd>
-              </div>
-              <div className="flex items-center justify-between py-2.5">
-                <dt className="text-muted-foreground">Status</dt>
-                <dd>
-                  <span
-                    className={
-                      subscription.status === "active"
-                        ? "font-medium text-green-600 dark:text-green-400"
-                        : subscription.status === "cancelled"
-                          ? "font-medium text-red-500"
-                          : "font-medium text-yellow-600"
-                    }
-                  >
-                    {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
-                  </span>
-                </dd>
-              </div>
-              <div className="flex items-center justify-between py-2.5">
-                <dt className="text-muted-foreground">Provider</dt>
-                <dd className="capitalize">{subscription.provider}</dd>
-              </div>
-              <div className="flex items-center justify-between py-2.5">
-                <dt className="text-muted-foreground">Type</dt>
-                <dd>{subscription.currentPeriodEnd ? "Subscription" : "Lifetime"}</dd>
-              </div>
-              {subscription.currentPeriodEnd && (
-                <div className="flex items-center justify-between py-2.5">
-                  <dt className="text-muted-foreground">
-                    {subscription.status === "cancelled" ? "Access until" : "Renews"}
-                  </dt>
-                  <dd>{new Date(subscription.currentPeriodEnd).toLocaleDateString()}</dd>
-                </div>
-              )}
-              <div className="flex items-center justify-between py-2.5 last:pb-0">
-                <dt className="text-muted-foreground">Since</dt>
-                <dd>
-                  {subscription.createdAt
-                    ? new Date(subscription.createdAt).toLocaleDateString()
-                    : "—"}
-                </dd>
-              </div>
-            </dl>
-          ) : (
-            <p className="text-sm text-muted-foreground">No purchase found for this account.</p>
-          )}
-        </div>
-      </section>
     </div>
   );
 }
