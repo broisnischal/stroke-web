@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import { authQueryOptions } from "#/lib/auth/queries";
+import { noIndex } from "#/lib/seo";
 
 export const Route = createFileRoute("/_guest")({
-  component: RouteComponent,
   beforeLoad: async ({ context }) => {
     // Redirect path when user is already present,
     // or after successful login/signup
@@ -23,6 +23,8 @@ export const Route = createFileRoute("/_guest")({
       redirectUrl: REDIRECT_URL,
     };
   },
+  component: RouteComponent,
+  head: noIndex,
 });
 
 function RouteComponent() {

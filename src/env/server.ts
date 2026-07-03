@@ -17,10 +17,17 @@ export const env = createEnv({
     // Admin API secret for license management
     LICENSE_ADMIN_SECRET: z.string().min(32),
 
+    // GitHub API token for release listings, optional (raises the rate
+    // limit from 60 to 5000 requests/hour; no scopes needed for public repos)
+    GITHUB_TOKEN: z.string().optional(),
+
     // Dodo Payments
     DODO_PAYMENTS_API_KEY: z.string().min(1),
     DODO_WEBHOOK_KEY: z.string().min(1),
     DODO_PRODUCT_ID: z.string().min(1),
+    // Team/Enterprise product ($99, covers a whole email domain). Optional —
+    // the Team plan is only offered when this is set.
+    DODO_TEAM_PRODUCT_ID: z.string().optional(),
     DODO_ENVIRONMENT: z.enum(["live_mode", "test_mode"]).default("test_mode"),
   },
   runtimeEnv: process.env,

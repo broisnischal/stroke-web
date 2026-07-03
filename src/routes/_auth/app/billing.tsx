@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useLocation } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
+  Building2Icon,
   CheckIcon,
   CopyIcon,
   EyeIcon,
@@ -9,48 +10,54 @@ import {
   KeyRoundIcon,
   Loader2Icon,
   MonitorIcon,
+  XCircleIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { SmartDownloadButton } from "#/components/download-button";
 import { buttonVariants } from "#/components/ui/button";
+import { authClient } from "#/lib/auth/auth-client";
 import {
-  $createCheckoutSession,
   $recoverLicense,
   billingQueryOptions,
+  enterpriseQueryOptions,
   licenseQueryOptions,
 } from "#/lib/billing/functions";
+import { STROKE_TEAM_SLUG, TEAM_PRICE_USD } from "#/lib/billing/plans";
 
 export const Route = createFileRoute("/_auth/app/billing")({
   loader: ({ context }) => {
     context.queryClient.prefetchQuery(billingQueryOptions());
     context.queryClient.prefetchQuery(licenseQueryOptions());
+    context.queryClient.prefetchQuery(enterpriseQueryOptions());
   },
   component: BillingPage,
 });
 
 function BillingPage() {
   const location = useLocation();
-  const success = new URLSearchParams(location.search).get("success") === "true";
+  const search = new URLSearchParams(location.search);
+  // Dodo appends its own status to our return URL — success=true only means
+  // "came back from checkout", not "the payment went through".
+  const returnedStatus = search.get("status");
+  const paymentFailed = returnedStatus === "failed" || returnedStatus === "cancelled";
+  const success = search.get("success") === "true" && !paymentFailed;
   const queryClient = useQueryClient();
 
-  const { data: subscription } = useQuery(billingQueryOptions());
   const { data: license } = useQuery(licenseQueryOptions());
+  const { data: enterprise } = useQuery(enterpriseQueryOptions());
 
   const [loading, setLoading] = useState(false);
+  const [teamLoading, setTeamLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [pollExpired, setPollExpired] = useState(false);
   const [recovering, setRecovering] = useState(false);
 
-  const isActive = subscription?.status === "active";
-  const stillWaiting = success && !license && !pollExpired;
-
   useEffect(() => {
     if (!success || license) return;
 
-    const sessionId = sessionStorage.getItem("dodo_session_id") ?? undefined;
     let attempts = 0;
 
     const id = setInterval(async () => {
@@ -59,7 +66,7 @@ function BillingPage() {
 
       if (attempts === 1 || attempts === 5 || attempts === 10) {
         try {
-          await $recoverLicense({ data: { sessionId } });
+          await $recoverLicense({ data: {} });
           await queryClient.refetchQueries({ queryKey: ["billing"] });
         } catch {
           // keep polling
@@ -78,8 +85,7 @@ function BillingPage() {
   async function handleManualRefresh() {
     setRecovering(true);
     try {
-      const sessionId = sessionStorage.getItem("dodo_session_id") ?? undefined;
-      await $recoverLicense({ data: { sessionId } });
+      await $recoverLicense({ data: {} });
       await queryClient.refetchQueries({ queryKey: ["billing"] });
       setPollExpired(false);
     } catch {
@@ -91,16 +97,28 @@ function BillingPage() {
 
   async function handleUpgrade() {
     setLoading(true);
-    try {
-      const { checkoutUrl, sessionId } = await $createCheckoutSession();
-      sessionStorage.setItem("dodo_session_id", sessionId);
-      window.location.href = checkoutUrl;
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to start checkout. Please try again.",
-      );
+    const { data, error } = await authClient.dodopayments.checkoutSession({
+      slug: "stroke-license",
+    });
+    if (error || !data?.url) {
+      toast.error(error?.message ?? "Failed to start checkout. Please try again.");
       setLoading(false);
+      return;
     }
+    window.location.href = data.url;
+  }
+
+  async function handleUpgradeTeam() {
+    setTeamLoading(true);
+    const { data, error } = await authClient.dodopayments.checkoutSession({
+      slug: STROKE_TEAM_SLUG,
+    });
+    if (error || !data?.url) {
+      toast.error(error?.message ?? "Failed to start checkout. Please try again.");
+      setTeamLoading(false);
+      return;
+    }
+    window.location.href = data.url;
   }
 
   async function copyKey() {
@@ -109,6 +127,49 @@ function BillingPage() {
     setCopied(true);
     toast.success("License key copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  // ── Failed or cancelled payment ───────────────────────────────────────────
+  if (paymentFailed) {
+    return (
+      <div className="mx-auto max-w-md space-y-6 pt-4">
+        <div className="flex items-start gap-3 rounded-md border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <XCircleIcon className="mt-0.5 size-4 shrink-0" />
+          <div>
+            <p className="font-medium">
+              {returnedStatus === "cancelled" ? "Payment cancelled" : "Payment failed"}
+            </p>
+            <p className="mt-0.5 text-[11px] opacity-80">
+              {returnedStatus === "cancelled"
+                ? "You cancelled the checkout before it completed."
+                : "Your bank or card declined the payment."}{" "}
+              You haven't been charged and no license was issued.
+            </p>
+          </div>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          You can try again whenever you're ready — the app keeps working free in the meantime. If
+          the problem repeats, a different card usually resolves it, or reach us through the support
+          page.
+        </p>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleUpgrade}
+            disabled={loading}
+            className={buttonVariants({ size: "sm" })}
+          >
+            <KeyRoundIcon className="size-3.5" />
+            {loading ? "Redirecting…" : "Try again"}
+          </button>
+          <Link to="/app/billing" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            Back to billing
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   // ── Post-payment activation flow ──────────────────────────────────────────
@@ -220,16 +281,11 @@ function BillingPage() {
                   <MonitorIcon className="size-3 shrink-0" />
                   {license.expiresAt
                     ? `Test license · expires ${new Date(license.expiresAt).toLocaleDateString()}`
-                    : "Lifetime — no expiry, no renewals"}
+                    : "Lifetime license · no expiry, no renewals"}
                 </p>
               </div>
             </div>
           </section>
-        ) : stillWaiting ? (
-          <div className="flex items-center gap-2.5 rounded-md border border-border/40 px-4 py-3 text-sm text-muted-foreground">
-            <Loader2Icon className="size-4 animate-spin" />
-            Generating license key…
-          </div>
         ) : null}
 
         {/* Activation steps */}
@@ -282,16 +338,52 @@ function BillingPage() {
   }
 
   // ── Default billing page (no ?success=true) ───────────────────────────────
+  const subtitle = license
+    ? enterprise?.role === "member"
+      ? `Covered by your team (${enterprise.domain}).`
+      : "Your license is active."
+    : "Get lifetime access to Stroke.";
+
   return (
     <div className="mx-auto max-w-md space-y-8">
       <div>
         <h1 className="text-base font-semibold tracking-tight">License &amp; Billing</h1>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {isActive ? "Your Pro license is active." : "Get lifetime access to Stroke Pro."}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
       </div>
 
-      {isActive && license ? (
+      {/* Team owner summary */}
+      {enterprise?.role === "owner" && (
+        <div className="flex items-start gap-3 rounded-md border border-border/40 px-4 py-3">
+          <Building2Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+          <div className="text-xs">
+            <p className="font-medium text-foreground">Team plan · {enterprise.domain}</p>
+            <p className="mt-0.5 text-muted-foreground">
+              Everyone with an{" "}
+              <strong className="font-medium text-foreground">@{enterprise.domain}</strong> email is
+              licensed automatically when they sign in.
+              {typeof enterprise.members === "number" &&
+                ` ${enterprise.members} ${enterprise.members === 1 ? "member" : "members"} licensed so far.`}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Covered member note */}
+      {enterprise?.role === "member" && license && (
+        <div className="flex items-start gap-3 rounded-md border border-emerald-500/20 bg-emerald-500/6 px-4 py-3 text-emerald-500">
+          <Building2Icon className="mt-0.5 size-4 shrink-0" />
+          <div className="text-xs">
+            <p className="font-medium">Covered by your team</p>
+            <p className="mt-0.5 opacity-80">
+              Your {enterprise.domain} organization has a Stroke Team license, so the key below is
+              yours at no cost.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* License key — personal, team owner, or covered member */}
+      {license && (
         <section className="space-y-2.5">
           <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
             License key
@@ -347,7 +439,10 @@ function BillingPage() {
             </div>
           </div>
         </section>
-      ) : (
+      )}
+
+      {/* Personal (Pro) purchase — only when the user has no license at all */}
+      {!license && (
         <section className="space-y-2.5">
           <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
             Stroke Pro · Lifetime
@@ -359,14 +454,14 @@ function BillingPage() {
               </p>
               <ul className="space-y-1.5 text-xs text-muted-foreground">
                 {[
-                  "All databases — Postgres, MySQL, SQLite, MongoDB, Redis",
-                  "Built-in MCP server for Claude &amp; Cursor",
-                  "macOS, Windows, Linux",
-                  "Lifetime access · free updates forever",
+                  "All ten engines, from Postgres to DuckDB",
+                  "Built-in MCP server for Claude & Cursor",
+                  "macOS, Windows & Linux, 2 devices at once",
+                  "One-time payment · every update included",
                 ].map((perk) => (
                   <li key={perk} className="flex items-start gap-2">
                     <span className="mt-px font-mono text-muted-foreground/50">—</span>
-                    <span dangerouslySetInnerHTML={{ __html: perk }} />
+                    <span>{perk}</span>
                   </li>
                 ))}
               </ul>
@@ -381,6 +476,48 @@ function BillingPage() {
               >
                 <KeyRoundIcon className="size-3.5" />
                 {loading ? "Redirecting…" : "Buy license"}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Team purchase — when configured and the user isn't already on a team */}
+      {enterprise?.available && enterprise.role === "none" && (
+        <section className="space-y-2.5">
+          <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
+            Stroke Team · Whole company
+          </p>
+          <div className="overflow-hidden rounded-md border border-border/40">
+            <div className="space-y-3 px-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                One ${TEAM_PRICE_USD} purchase licenses everyone on your company's email domain — no
+                seats to manage, no per-user fees.
+              </p>
+              <ul className="space-y-1.5 text-xs text-muted-foreground">
+                {[
+                  "Every teammate on your domain, licensed automatically",
+                  "Each member gets their own key · 2 devices each",
+                  "All engines & the MCP server, same as Pro",
+                  "One-time payment · every update included",
+                ].map((perk) => (
+                  <li key={perk} className="flex items-start gap-2">
+                    <span className="mt-px font-mono text-muted-foreground/50">—</span>
+                    <span>{perk}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex items-center justify-between border-t border-border/30 px-4 py-3">
+              <p className="text-xs text-muted-foreground">Requires a company email</p>
+              <button
+                type="button"
+                onClick={handleUpgradeTeam}
+                disabled={teamLoading}
+                className={buttonVariants({ variant: license ? "outline" : "default", size: "sm" })}
+              >
+                <Building2Icon className="size-3.5" />
+                {teamLoading ? "Redirecting…" : `Buy Team · $${TEAM_PRICE_USD}`}
               </button>
             </div>
           </div>

@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   DownloadIcon,
@@ -7,76 +6,20 @@ import {
   ServerIcon,
   TerminalIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { buttonVariants } from "#/components/ui/button";
+import {
+  type Arch,
+  type GitHubAsset,
+  type OS,
+  RELEASES_URL,
+  useLatestRelease,
+  usePlatform,
+} from "#/lib/releases";
 
 export const Route = createFileRoute("/_auth/app/downloads")({
   component: DownloadsPage,
 });
-
-const RELEASES_URL = "https://github.com/broisnischal/stroke/releases";
-const GITHUB_API = "https://api.github.com/repos/broisnischal/stroke/releases/latest";
-
-interface GitHubAsset {
-  name: string;
-  browser_download_url: string;
-  size: number;
-}
-
-interface GitHubRelease {
-  tag_name: string;
-  published_at: string;
-  assets: GitHubAsset[];
-  html_url: string;
-}
-
-function useLatestRelease() {
-  return useQuery<GitHubRelease>({
-    queryKey: ["github-latest-release"],
-    queryFn: () => fetch(GITHUB_API).then((r) => r.json() as Promise<GitHubRelease>),
-    staleTime: 1000 * 60 * 30,
-    gcTime: 1000 * 60 * 60,
-  });
-}
-
-type Arch = "x64" | "arm64";
-type OS = "windows" | "macos" | "linux";
-
-interface Platform {
-  os: OS;
-  arch: Arch;
-  label: string;
-}
-
-interface NavigatorUAData {
-  platform: string;
-  getHighEntropyValues(hints: string[]): Promise<{ architecture: string }>;
-}
-
-async function detectPlatform(): Promise<Platform | null> {
-  const ua = navigator.userAgent;
-  if (/windows/i.test(ua)) return { os: "windows", arch: "x64", label: "Windows" };
-  if (/macintosh|mac os x/i.test(ua)) {
-    let arch: Arch = "x64";
-    const uaData = (navigator as Navigator & { userAgentData?: NavigatorUAData }).userAgentData;
-    if (uaData) {
-      try {
-        const high = await uaData.getHighEntropyValues(["architecture"]);
-        if (high.architecture === "arm") arch = "arm64";
-      } catch {
-        if (/arm/i.test(ua)) arch = "arm64";
-      }
-    } else if (/arm/i.test(ua)) {
-      arch = "arm64";
-    }
-    return { os: "macos", arch, label: `macOS (${arch === "arm64" ? "Apple Silicon" : "Intel"})` };
-  }
-  if (/linux/i.test(ua)) {
-    return { os: "linux", arch: "x64", label: "Linux" };
-  }
-  return null;
-}
 
 const PLATFORM_GROUPS: {
   icon: React.ElementType;
@@ -163,11 +106,7 @@ function formatBytes(b: number) {
 
 function DownloadsPage() {
   const { data: release, isLoading } = useLatestRelease();
-  const [currentPlatform, setCurrentPlatform] = useState<Platform | null>(null);
-
-  useEffect(() => {
-    detectPlatform().then(setCurrentPlatform);
-  }, []);
+  const currentPlatform = usePlatform();
 
   return (
     <div className="mx-auto max-w-xl space-y-9">

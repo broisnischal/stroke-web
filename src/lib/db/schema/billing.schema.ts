@@ -91,6 +91,44 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   }),
 }));
 
+export type EnterpriseDomainStatus = "active" | "refunded";
+
+/**
+ * A company domain covered by a one-time Team purchase. Any user whose
+ * verified email matches an active domain is auto-issued a per-member license
+ * (see src/lib/license). One row per domain; the buyer is `ownerUserId`.
+ */
+export const enterpriseDomains = sqliteTable(
+  "enterprise_domains",
+  {
+    id: text("id").primaryKey(),
+    domain: text("domain").notNull().unique(), // lowercased, e.g. "acme.com"
+    ownerUserId: text("owner_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    plan: text("plan").notNull().default("team"),
+    provider: text("provider").notNull(), // 'dodo'
+    providerCustomerId: text("provider_customer_id"),
+    providerPaymentId: text("provider_payment_id").notNull().unique(),
+    status: text("status").notNull().default("active").$type<EnterpriseDomainStatus>(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("enterprise_domains_owner_user_id_idx").on(table.ownerUserId),
+    index("enterprise_domains_domain_idx").on(table.domain),
+  ],
+);
+
+export const enterpriseDomainsRelations = relations(enterpriseDomains, ({ one }) => ({
+  owner: one(user, { fields: [enterpriseDomains.ownerUserId], references: [user.id] }),
+}));
+
 export const activations = sqliteTable(
   "activations",
   {
