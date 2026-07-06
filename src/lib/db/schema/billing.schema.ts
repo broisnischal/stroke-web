@@ -147,6 +147,24 @@ export const activations = sqliteTable(
   ],
 );
 
+/**
+ * Server-authoritative free-trial ledger, keyed by device fingerprint.
+ * The desktop app phones home with its `device_id` on launch; the server
+ * records the trial start the first time it sees a device and always keeps
+ * the EARLIEST start thereafter. This makes the trial reinstall- and
+ * disk-wipe-proof: clearing local files can't grant a fresh trial because
+ * the server remembers when this device first started.
+ */
+export const deviceTrials = sqliteTable("device_trials", {
+  deviceId: text("device_id").primaryKey(),
+  startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+  hostname: text("hostname"),
+  lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+});
+
 export const licensesRelations = relations(licenses, ({ one, many }) => ({
   user: one(user, { fields: [licenses.userId], references: [user.id] }),
   activations: many(activations),
