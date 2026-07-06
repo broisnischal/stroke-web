@@ -17,6 +17,14 @@ export const env = createEnv({
     // Admin API secret for license management
     LICENSE_ADMIN_SECRET: z.string().min(32),
 
+    // Stroke desktop OAuth proxy — confidential provider client secrets.
+    // Set via `wrangler secret put <NAME>`. Optional so the app boots without
+    // every provider configured. (Used by src/routes/api/oauth/token.ts.)
+    SUPABASE_CLIENT_SECRET: z.string().optional(),
+    NEON_CLIENT_SECRET: z.string().optional(),
+    PLANETSCALE_CLIENT_SECRET: z.string().optional(),
+    PRISMA_CLIENT_SECRET: z.string().optional(),
+
     // Dodo Payments
     DODO_PAYMENTS_API_KEY: z.string().min(1),
     DODO_WEBHOOK_KEY: z.string().min(1),
