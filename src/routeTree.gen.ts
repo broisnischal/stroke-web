@@ -26,6 +26,7 @@ import { Route as AuthAppRouteRouteImport } from './routes/_auth/app/route'
 import { Route as AuthAppIndexRouteImport } from './routes/_auth/app/index'
 import { Route as ApiWebhooksProviderRouteImport } from './routes/api/webhooks/$provider'
 import { Route as ApiOauthTokenRouteImport } from './routes/api/oauth/token'
+import { Route as ApiLicenseTrialRouteImport } from './routes/api/license/trial'
 import { Route as ApiLicensePubkeyRouteImport } from './routes/api/license/pubkey'
 import { Route as ApiLicenseDeactivateRouteImport } from './routes/api/license/deactivate'
 import { Route as ApiLicenseCheckRouteImport } from './routes/api/license/check'
@@ -121,6 +122,11 @@ const ApiOauthTokenRoute = ApiOauthTokenRouteImport.update({
   path: '/api/oauth/token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLicenseTrialRoute = ApiLicenseTrialRouteImport.update({
+  id: '/api/license/trial',
+  path: '/api/license/trial',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLicensePubkeyRoute = ApiLicensePubkeyRouteImport.update({
   id: '/api/license/pubkey',
   path: '/api/license/pubkey',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/api/license/check': typeof ApiLicenseCheckRoute
   '/api/license/deactivate': typeof ApiLicenseDeactivateRoute
   '/api/license/pubkey': typeof ApiLicensePubkeyRoute
+  '/api/license/trial': typeof ApiLicenseTrialRoute
   '/api/oauth/token': typeof ApiOauthTokenRoute
   '/api/webhooks/$provider': typeof ApiWebhooksProviderRoute
   '/app/': typeof AuthAppIndexRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/api/license/check': typeof ApiLicenseCheckRoute
   '/api/license/deactivate': typeof ApiLicenseDeactivateRoute
   '/api/license/pubkey': typeof ApiLicensePubkeyRoute
+  '/api/license/trial': typeof ApiLicenseTrialRoute
   '/api/oauth/token': typeof ApiOauthTokenRoute
   '/api/webhooks/$provider': typeof ApiWebhooksProviderRoute
   '/app': typeof AuthAppIndexRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/api/license/check': typeof ApiLicenseCheckRoute
   '/api/license/deactivate': typeof ApiLicenseDeactivateRoute
   '/api/license/pubkey': typeof ApiLicensePubkeyRoute
+  '/api/license/trial': typeof ApiLicenseTrialRoute
   '/api/oauth/token': typeof ApiOauthTokenRoute
   '/api/webhooks/$provider': typeof ApiWebhooksProviderRoute
   '/_auth/app/': typeof AuthAppIndexRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/api/license/check'
     | '/api/license/deactivate'
     | '/api/license/pubkey'
+    | '/api/license/trial'
     | '/api/oauth/token'
     | '/api/webhooks/$provider'
     | '/app/'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/api/license/check'
     | '/api/license/deactivate'
     | '/api/license/pubkey'
+    | '/api/license/trial'
     | '/api/oauth/token'
     | '/api/webhooks/$provider'
     | '/app'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/api/license/check'
     | '/api/license/deactivate'
     | '/api/license/pubkey'
+    | '/api/license/trial'
     | '/api/oauth/token'
     | '/api/webhooks/$provider'
     | '/_auth/app/'
@@ -368,6 +380,7 @@ export interface RootRouteChildren {
   ApiLicenseCheckRoute: typeof ApiLicenseCheckRoute
   ApiLicenseDeactivateRoute: typeof ApiLicenseDeactivateRoute
   ApiLicensePubkeyRoute: typeof ApiLicensePubkeyRoute
+  ApiLicenseTrialRoute: typeof ApiLicenseTrialRoute
   ApiOauthTokenRoute: typeof ApiOauthTokenRoute
   ApiWebhooksProviderRoute: typeof ApiWebhooksProviderRoute
   ApiAdminLicenseInfoRoute: typeof ApiAdminLicenseInfoRoute
@@ -494,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/api/oauth/token'
       fullPath: '/api/oauth/token'
       preLoaderRoute: typeof ApiOauthTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/license/trial': {
+      id: '/api/license/trial'
+      path: '/api/license/trial'
+      fullPath: '/api/license/trial'
+      preLoaderRoute: typeof ApiLicenseTrialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/license/pubkey': {
@@ -637,6 +657,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLicenseCheckRoute: ApiLicenseCheckRoute,
   ApiLicenseDeactivateRoute: ApiLicenseDeactivateRoute,
   ApiLicensePubkeyRoute: ApiLicensePubkeyRoute,
+  ApiLicenseTrialRoute: ApiLicenseTrialRoute,
   ApiOauthTokenRoute: ApiOauthTokenRoute,
   ApiWebhooksProviderRoute: ApiWebhooksProviderRoute,
   ApiAdminLicenseInfoRoute: ApiAdminLicenseInfoRoute,

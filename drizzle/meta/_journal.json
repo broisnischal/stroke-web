@@ -50,6 +50,13 @@
       "when": 1783046993451,
       "tag": "0006_short_rage",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1783358860116,
+      "tag": "0007_oval_thunderbolt",
+      "breakpoints": true
     }
   ]
 }
