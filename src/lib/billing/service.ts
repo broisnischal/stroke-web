@@ -1,11 +1,107 @@
 import "@tanstack/react-start/server-only";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 import { db } from "#/lib/db";
-import { payments, subscriptions, user } from "#/lib/db/schema";
+import { enterpriseDomains, licenses, payments, subscriptions, user } from "#/lib/db/schema";
 import { getOrIssueLicense } from "#/lib/license";
 
+import { domainFromEmail, getEnterpriseDomain, isPublicEmailDomain, TEAM_PLAN } from "./enterprise";
 import type { BillingEvent } from "./providers/types";
+
+/**
+ * Apply a completed Team purchase. Idempotent: safe to call for the first
+ * webhook, a retry, or the recover flow. Marks the buyer's email domain as
+ * covered (so every colleague is auto-licensed) and issues the buyer's own key.
+ */
+async function grantTeamPurchase(args: {
+  userId: string;
+  email: string;
+  paymentId: string;
+  customerId?: string;
+  amount?: number;
+  currency?: string;
+}): Promise<void> {
+  const { userId, email, paymentId, customerId, amount, currency } = args;
+  const domain = domainFromEmail(email);
+
+  // Mark the company domain as covered. A consumer domain should have been
+  // blocked at checkout; if one slips through, skip domain coverage and grant
+  // only the buyer a personal license.
+  if (domain && !isPublicEmailDomain(domain)) {
+    const existing = await getEnterpriseDomain(domain);
+    if (!existing) {
+      await db.insert(enterpriseDomains).values({
+        id: crypto.randomUUID(),
+        domain,
+        ownerUserId: userId,
+        plan: TEAM_PLAN,
+        provider: "dodo",
+        providerCustomerId: customerId ?? null,
+        providerPaymentId: paymentId,
+        status: "active",
+      });
+    } else if (existing.status !== "active") {
+      await db
+        .update(enterpriseDomains)
+        .set({ status: "active" })
+        .where(eq(enterpriseDomains.id, existing.id));
+    }
+  } else {
+    console.warn(
+      "[billing] team purchase for non-corporate domain, issuing personal license only:",
+      email,
+    );
+  }
+
+  // Record the buyer's subscription + payment (idempotent on providerPaymentId).
+  const existingSub = await db
+    .select({ id: subscriptions.id })
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
+    .limit(1);
+
+  let subscriptionId: string;
+  if (existingSub.length > 0) {
+    subscriptionId = existingSub[0].id;
+    await db
+      .update(subscriptions)
+      .set({ status: "active", plan: TEAM_PLAN, providerCustomerId: customerId ?? "" })
+      .where(eq(subscriptions.id, subscriptionId));
+  } else {
+    subscriptionId = crypto.randomUUID();
+    await db.insert(subscriptions).values({
+      id: subscriptionId,
+      userId,
+      provider: "dodo",
+      providerCustomerId: customerId ?? "",
+      providerSubscriptionId: paymentId,
+      plan: TEAM_PLAN,
+      status: "active",
+      currentPeriodEnd: null,
+    });
+  }
+
+  const existingPayment = await db
+    .select({ id: payments.id })
+    .from(payments)
+    .where(eq(payments.providerPaymentId, paymentId))
+    .limit(1);
+
+  if (existingPayment.length === 0) {
+    await db.insert(payments).values({
+      id: crypto.randomUUID(),
+      userId,
+      subscriptionId,
+      provider: "dodo",
+      providerPaymentId: paymentId,
+      amount: amount ?? 0,
+      currency: currency ?? "USD",
+      status: "succeeded",
+    });
+  }
+
+  await getOrIssueLicense(userId, email, { plan: TEAM_PLAN });
+}
 
 export async function getActiveSubscription(userId: string) {
   const rows = await db
@@ -23,6 +119,22 @@ export async function getSubscription(userId: string) {
     .where(eq(subscriptions.userId, userId))
     .limit(1);
   return rows[0] ?? null;
+}
+
+/**
+ * True when the user already owns Stroke — an active subscription record or a
+ * non-revoked license. Used to block a second purchase before checkout.
+ */
+export async function userHasActiveLicense(userId: string): Promise<boolean> {
+  const activeSub = await getActiveSubscription(userId);
+  if (activeSub) return true;
+
+  const licenseRows = await db
+    .select({ id: licenses.id })
+    .from(licenses)
+    .where(and(eq(licenses.userId, userId), isNull(licenses.revokedAt)))
+    .limit(1);
+  return licenseRows.length > 0;
 }
 
 export async function handleBillingEvent(event: BillingEvent): Promise<void> {
@@ -151,6 +263,20 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
         return;
       }
 
+      // Team purchase: mark the buyer's domain as covered. grantTeamPurchase is
+      // fully idempotent, so it also handles retries and the recover flow.
+      if (data.plan === TEAM_PLAN) {
+        await grantTeamPurchase({
+          userId: resolvedUserId,
+          email: resolvedEmail,
+          paymentId: data.paymentId,
+          customerId: data.customerId,
+          amount: data.amount,
+          currency: data.currency,
+        });
+        return;
+      }
+
       // Idempotency: if this exact payment was already processed, just ensure license exists.
       const existingPayment = await db
         .select({ id: payments.id })
@@ -231,6 +357,14 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
         .update(payments)
         .set({ status: "refunded" })
         .where(eq(payments.providerPaymentId, data.paymentId));
+
+      // If this payment backed a Team domain, stop covering new members.
+      // Already-issued member licenses are left intact — revoke them via the
+      // admin endpoint if a refund should fully cut off access.
+      await db
+        .update(enterpriseDomains)
+        .set({ status: "refunded" })
+        .where(eq(enterpriseDomains.providerPaymentId, data.paymentId));
       break;
     }
   }

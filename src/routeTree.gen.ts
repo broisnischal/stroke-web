@@ -9,19 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RoadmapRouteImport } from './routes/roadmap'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as DownloadRouteImport } from './routes/download'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as GuestRouteRouteImport } from './routes/_guest/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiReleasesRouteImport } from './routes/api/releases'
+import { Route as ApiChangelogRouteImport } from './routes/api/changelog'
 import { Route as GuestSignupRouteImport } from './routes/_guest/signup'
 import { Route as GuestLoginRouteImport } from './routes/_guest/login'
 import { Route as AuthAppRouteRouteImport } from './routes/_auth/app/route'
 import { Route as AuthAppIndexRouteImport } from './routes/_auth/app/index'
 import { Route as ApiWebhooksProviderRouteImport } from './routes/api/webhooks/$provider'
+import { Route as ApiOauthTokenRouteImport } from './routes/api/oauth/token'
 import { Route as ApiLicensePubkeyRouteImport } from './routes/api/license/pubkey'
 import { Route as ApiLicenseDeactivateRouteImport } from './routes/api/license/deactivate'
 import { Route as ApiLicenseCheckRouteImport } from './routes/api/license/check'
 import { Route as ApiLicenseActivateRouteImport } from './routes/api/license/activate'
-import { Route as ApiBillingCheckoutRouteImport } from './routes/api/billing/checkout'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthAppSupportRouteImport } from './routes/_auth/app/support'
 import { Route as AuthAppDownloadsRouteImport } from './routes/_auth/app/downloads'
@@ -30,6 +38,36 @@ import { Route as ApiAdminLicenseUnrevokeRouteImport } from './routes/api/admin/
 import { Route as ApiAdminLicenseRevokeRouteImport } from './routes/api/admin/license/revoke'
 import { Route as ApiAdminLicenseInfoRouteImport } from './routes/api/admin/license/info'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoadmapRoute = RoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DownloadRoute = DownloadRouteImport.update({
+  id: '/download',
+  path: '/download',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuestRouteRoute = GuestRouteRouteImport.update({
   id: '/_guest',
   getParentRoute: () => rootRouteImport,
@@ -41,6 +79,16 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReleasesRoute = ApiReleasesRouteImport.update({
+  id: '/api/releases',
+  path: '/api/releases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChangelogRoute = ApiChangelogRouteImport.update({
+  id: '/api/changelog',
+  path: '/api/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuestSignupRoute = GuestSignupRouteImport.update({
@@ -68,6 +116,11 @@ const ApiWebhooksProviderRoute = ApiWebhooksProviderRouteImport.update({
   path: '/api/webhooks/$provider',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOauthTokenRoute = ApiOauthTokenRouteImport.update({
+  id: '/api/oauth/token',
+  path: '/api/oauth/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLicensePubkeyRoute = ApiLicensePubkeyRouteImport.update({
   id: '/api/license/pubkey',
   path: '/api/license/pubkey',
@@ -86,11 +139,6 @@ const ApiLicenseCheckRoute = ApiLicenseCheckRouteImport.update({
 const ApiLicenseActivateRoute = ApiLicenseActivateRouteImport.update({
   id: '/api/license/activate',
   path: '/api/license/activate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiBillingCheckoutRoute = ApiBillingCheckoutRouteImport.update({
-  id: '/api/billing/checkout',
-  path: '/api/billing/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -131,18 +179,26 @@ const ApiAdminLicenseInfoRoute = ApiAdminLicenseInfoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/download': typeof DownloadRoute
+  '/privacy': typeof PrivacyRoute
+  '/roadmap': typeof RoadmapRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/app': typeof AuthAppRouteRouteWithChildren
   '/login': typeof GuestLoginRoute
   '/signup': typeof GuestSignupRoute
+  '/api/changelog': typeof ApiChangelogRoute
+  '/api/releases': typeof ApiReleasesRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
   '/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
   '/api/license/check': typeof ApiLicenseCheckRoute
   '/api/license/deactivate': typeof ApiLicenseDeactivateRoute
   '/api/license/pubkey': typeof ApiLicensePubkeyRoute
+  '/api/oauth/token': typeof ApiOauthTokenRoute
   '/api/webhooks/$provider': typeof ApiWebhooksProviderRoute
   '/app/': typeof AuthAppIndexRoute
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
@@ -151,17 +207,25 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/download': typeof DownloadRoute
+  '/privacy': typeof PrivacyRoute
+  '/roadmap': typeof RoadmapRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/login': typeof GuestLoginRoute
   '/signup': typeof GuestSignupRoute
+  '/api/changelog': typeof ApiChangelogRoute
+  '/api/releases': typeof ApiReleasesRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
   '/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
   '/api/license/check': typeof ApiLicenseCheckRoute
   '/api/license/deactivate': typeof ApiLicenseDeactivateRoute
   '/api/license/pubkey': typeof ApiLicensePubkeyRoute
+  '/api/oauth/token': typeof ApiOauthTokenRoute
   '/api/webhooks/$provider': typeof ApiWebhooksProviderRoute
   '/app': typeof AuthAppIndexRoute
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
@@ -173,18 +237,26 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_guest': typeof GuestRouteRouteWithChildren
+  '/changelog': typeof ChangelogRoute
+  '/download': typeof DownloadRoute
+  '/privacy': typeof PrivacyRoute
+  '/roadmap': typeof RoadmapRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/_auth/app': typeof AuthAppRouteRouteWithChildren
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/signup': typeof GuestSignupRoute
+  '/api/changelog': typeof ApiChangelogRoute
+  '/api/releases': typeof ApiReleasesRoute
   '/_auth/app/billing': typeof AuthAppBillingRoute
   '/_auth/app/downloads': typeof AuthAppDownloadsRoute
   '/_auth/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/billing/checkout': typeof ApiBillingCheckoutRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
   '/api/license/check': typeof ApiLicenseCheckRoute
   '/api/license/deactivate': typeof ApiLicenseDeactivateRoute
   '/api/license/pubkey': typeof ApiLicensePubkeyRoute
+  '/api/oauth/token': typeof ApiOauthTokenRoute
   '/api/webhooks/$provider': typeof ApiWebhooksProviderRoute
   '/_auth/app/': typeof AuthAppIndexRoute
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
@@ -195,18 +267,26 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/changelog'
+    | '/download'
+    | '/privacy'
+    | '/roadmap'
+    | '/sitemap.xml'
+    | '/terms'
     | '/app'
     | '/login'
     | '/signup'
+    | '/api/changelog'
+    | '/api/releases'
     | '/app/billing'
     | '/app/downloads'
     | '/app/support'
     | '/api/auth/$'
-    | '/api/billing/checkout'
     | '/api/license/activate'
     | '/api/license/check'
     | '/api/license/deactivate'
     | '/api/license/pubkey'
+    | '/api/oauth/token'
     | '/api/webhooks/$provider'
     | '/app/'
     | '/api/admin/license/info'
@@ -215,17 +295,25 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/changelog'
+    | '/download'
+    | '/privacy'
+    | '/roadmap'
+    | '/sitemap.xml'
+    | '/terms'
     | '/login'
     | '/signup'
+    | '/api/changelog'
+    | '/api/releases'
     | '/app/billing'
     | '/app/downloads'
     | '/app/support'
     | '/api/auth/$'
-    | '/api/billing/checkout'
     | '/api/license/activate'
     | '/api/license/check'
     | '/api/license/deactivate'
     | '/api/license/pubkey'
+    | '/api/oauth/token'
     | '/api/webhooks/$provider'
     | '/app'
     | '/api/admin/license/info'
@@ -236,18 +324,26 @@ export interface FileRouteTypes {
     | '/'
     | '/_auth'
     | '/_guest'
+    | '/changelog'
+    | '/download'
+    | '/privacy'
+    | '/roadmap'
+    | '/sitemap.xml'
+    | '/terms'
     | '/_auth/app'
     | '/_guest/login'
     | '/_guest/signup'
+    | '/api/changelog'
+    | '/api/releases'
     | '/_auth/app/billing'
     | '/_auth/app/downloads'
     | '/_auth/app/support'
     | '/api/auth/$'
-    | '/api/billing/checkout'
     | '/api/license/activate'
     | '/api/license/check'
     | '/api/license/deactivate'
     | '/api/license/pubkey'
+    | '/api/oauth/token'
     | '/api/webhooks/$provider'
     | '/_auth/app/'
     | '/api/admin/license/info'
@@ -259,12 +355,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   GuestRouteRoute: typeof GuestRouteRouteWithChildren
+  ChangelogRoute: typeof ChangelogRoute
+  DownloadRoute: typeof DownloadRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RoadmapRoute: typeof RoadmapRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
+  ApiChangelogRoute: typeof ApiChangelogRoute
+  ApiReleasesRoute: typeof ApiReleasesRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiBillingCheckoutRoute: typeof ApiBillingCheckoutRoute
   ApiLicenseActivateRoute: typeof ApiLicenseActivateRoute
   ApiLicenseCheckRoute: typeof ApiLicenseCheckRoute
   ApiLicenseDeactivateRoute: typeof ApiLicenseDeactivateRoute
   ApiLicensePubkeyRoute: typeof ApiLicensePubkeyRoute
+  ApiOauthTokenRoute: typeof ApiOauthTokenRoute
   ApiWebhooksProviderRoute: typeof ApiWebhooksProviderRoute
   ApiAdminLicenseInfoRoute: typeof ApiAdminLicenseInfoRoute
   ApiAdminLicenseRevokeRoute: typeof ApiAdminLicenseRevokeRoute
@@ -273,6 +377,48 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roadmap': {
+      id: '/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof RoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/download': {
+      id: '/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof DownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_guest': {
       id: '/_guest'
       path: ''
@@ -292,6 +438,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/releases': {
+      id: '/api/releases'
+      path: '/api/releases'
+      fullPath: '/api/releases'
+      preLoaderRoute: typeof ApiReleasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/changelog': {
+      id: '/api/changelog'
+      path: '/api/changelog'
+      fullPath: '/api/changelog'
+      preLoaderRoute: typeof ApiChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_guest/signup': {
@@ -329,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/oauth/token': {
+      id: '/api/oauth/token'
+      path: '/api/oauth/token'
+      fullPath: '/api/oauth/token'
+      preLoaderRoute: typeof ApiOauthTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/license/pubkey': {
       id: '/api/license/pubkey'
       path: '/api/license/pubkey'
@@ -355,13 +522,6 @@ declare module '@tanstack/react-router' {
       path: '/api/license/activate'
       fullPath: '/api/license/activate'
       preLoaderRoute: typeof ApiLicenseActivateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/billing/checkout': {
-      id: '/api/billing/checkout'
-      path: '/api/billing/checkout'
-      fullPath: '/api/billing/checkout'
-      preLoaderRoute: typeof ApiBillingCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -464,12 +624,20 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   GuestRouteRoute: GuestRouteRouteWithChildren,
+  ChangelogRoute: ChangelogRoute,
+  DownloadRoute: DownloadRoute,
+  PrivacyRoute: PrivacyRoute,
+  RoadmapRoute: RoadmapRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
+  ApiChangelogRoute: ApiChangelogRoute,
+  ApiReleasesRoute: ApiReleasesRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiBillingCheckoutRoute: ApiBillingCheckoutRoute,
   ApiLicenseActivateRoute: ApiLicenseActivateRoute,
   ApiLicenseCheckRoute: ApiLicenseCheckRoute,
   ApiLicenseDeactivateRoute: ApiLicenseDeactivateRoute,
   ApiLicensePubkeyRoute: ApiLicensePubkeyRoute,
+  ApiOauthTokenRoute: ApiOauthTokenRoute,
   ApiWebhooksProviderRoute: ApiWebhooksProviderRoute,
   ApiAdminLicenseInfoRoute: ApiAdminLicenseInfoRoute,
   ApiAdminLicenseRevokeRoute: ApiAdminLicenseRevokeRoute,

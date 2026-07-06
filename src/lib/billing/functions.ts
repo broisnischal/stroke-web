@@ -5,10 +5,18 @@ import * as z from "zod";
 import { env } from "#/env/server";
 import { authMiddleware } from "#/lib/auth/middleware";
 import { billing } from "#/lib/billing";
+import {
+  countCoveredMembers,
+  getCoveringDomain,
+  getOwnedEnterpriseDomain,
+} from "#/lib/billing/enterprise";
 import { getActiveSubscription, getSubscription } from "#/lib/billing/service";
 import { db } from "#/lib/db";
 import { subscriptions } from "#/lib/db/schema";
-import { getLicense, getOrIssueLicense } from "#/lib/license";
+import { getLicense, getOrIssueLicense, resolveLicense } from "#/lib/license";
+
+// Checkout is handled by the @dodopayments/better-auth plugin — see
+// src/lib/auth/auth.ts. Clients call authClient.dodopayments.checkoutSession().
 
 export const $getSubscription = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -16,30 +24,36 @@ export const $getSubscription = createServerFn({ method: "GET" })
     return getSubscription(context.user.id);
   });
 
-export const $createCheckoutSession = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .handler(async ({ context }) => {
-    const existing = await getActiveSubscription(context.user.id);
-    if (existing) {
-      throw new Error("You already have an active license.");
-    }
-
-    const { checkoutUrl, sessionId } = await billing.createCheckoutSession({
-      productId: env.DODO_PRODUCT_ID,
-      customer: {
-        email: context.user.email,
-        name: context.user.name,
-      },
-      metadata: { userId: context.user.id },
-      returnUrl: `${env.VITE_BASE_URL}/app/billing?success=true`,
-    });
-    return { checkoutUrl, sessionId };
-  });
-
 export const $getLicense = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    return getLicense(context.user.id);
+    // resolveLicense also mints a key for members covered by a Team domain.
+    return resolveLicense(context.user.id, context.user.email);
+  });
+
+/**
+ * Enterprise/Team status for the current user:
+ * - "owner"  — bought Team for their domain (includes seat count)
+ * - "member" — covered by someone else's Team purchase on their domain
+ * - "none"   — not part of any Team plan
+ */
+export const $getEnterprise = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const available = Boolean(env.DODO_TEAM_PRODUCT_ID);
+
+    const owned = await getOwnedEnterpriseDomain(context.user.id);
+    if (owned && owned.status === "active") {
+      const members = await countCoveredMembers(owned.domain);
+      return { role: "owner" as const, domain: owned.domain, members, available };
+    }
+
+    const covering = await getCoveringDomain(context.user.email);
+    if (covering) {
+      return { role: "member" as const, domain: covering.domain, members: null, available };
+    }
+
+    return { role: "none" as const, domain: null, members: null, available };
   });
 
 /**
@@ -56,7 +70,7 @@ export const $recoverLicense = createServerFn({ method: "POST" })
   .inputValidator(z.object({ sessionId: z.string().optional() }))
   .handler(async ({ context, data }) => {
     // 1. Already have a license — return it immediately.
-    const existing = await getLicense(context.user.id);
+    const existing = await getLicense(context.user.id, context.user.email);
     if (existing) return existing;
 
     // 2. Verify directly with Dodo when we have a checkout session ID.
@@ -86,8 +100,10 @@ export const $recoverLicense = createServerFn({ method: "POST" })
 
     // 3. Fallback: subscription already exists (e.g. webhook fired).
     const sub = await getActiveSubscription(context.user.id);
-    if (!sub) return null;
-    return getOrIssueLicense(context.user.id, context.user.email);
+    if (sub) return getOrIssueLicense(context.user.id, context.user.email);
+
+    // 4. Fallback: covered by a Team domain (member never checks out).
+    return resolveLicense(context.user.id, context.user.email);
   });
 
 export const billingQueryOptions = () =>
@@ -100,4 +116,10 @@ export const licenseQueryOptions = () =>
   queryOptions({
     queryKey: ["billing", "license"],
     queryFn: ({ signal }) => $getLicense({ signal }),
+  });
+
+export const enterpriseQueryOptions = () =>
+  queryOptions({
+    queryKey: ["billing", "enterprise"],
+    queryFn: ({ signal }) => $getEnterprise({ signal }),
   });

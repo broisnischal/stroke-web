@@ -8,6 +8,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ThemeProvider } from "#/components/theme-provider";
 import { Toaster } from "#/components/ui/sonner";
 import type { AuthQueryResult } from "#/lib/auth/queries";
+import { seo } from "#/lib/seo";
 
 import appCss from "#/styles.css?url";
 
@@ -22,30 +23,28 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   // beforeLoad: ({ context }) => {
   //   context.queryClient.prefetchQuery(authQueryOptions());
   // },
-  head: () => ({
-    meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: "Stroke — A fast, modern desktop database client",
-      },
-      {
-        name: "description",
-        content:
-          "Connect to PostgreSQL, MySQL, SQLite, Turso/LibSQL, and Cloudflare D1. Browse schemas, edit data inline, write SQL, and let AI talk to your database via MCP.",
-      },
-    ],
-    links: [
-      { rel: "icon", type: "image/png", href: "/icon.png" },
-      { rel: "apple-touch-icon", href: "/icon.png" },
-      { rel: "stylesheet", href: appCss },
-    ],
-  }),
+  head: () => {
+    // Default social/meta tags; every public route overrides them via seo().
+    // Canonical links are per-route only, so they aren't emitted here.
+    const base = seo({
+      title: "Stroke — A fast, native desktop database client",
+      description:
+        "A fast database GUI for PostgreSQL, MySQL, SQLite, SQL Server, ClickHouse, DuckDB, and more. Browse schemas, edit data, write SQL, and let AI query your database via MCP. Native Rust, under 40 MB of memory.",
+      path: "/",
+    });
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        ...base.meta,
+      ],
+      links: [
+        { rel: "icon", type: "image/png", href: "/icon.png" },
+        { rel: "apple-touch-icon", href: "/icon.png" },
+        { rel: "stylesheet", href: appCss },
+      ],
+    };
+  },
   shellComponent: RootDocument,
 });
 
@@ -54,6 +53,10 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
     // suppress since we're updating the "dark" class in ThemeProvider
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Rendered directly: TanStack head() dedupes meta by name, which
+            would drop one of the two media-scoped theme-color tags. */}
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
         <HeadContent />
       </head>
       <body>

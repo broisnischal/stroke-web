@@ -7,6 +7,8 @@ export const user = sqliteTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
   image: text("image"),
+  // Dodo Payments customer id, managed by the @dodopayments/better-auth plugin
+  dodoCustomerId: text("dodo_customer_id"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),

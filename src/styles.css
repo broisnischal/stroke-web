@@ -47,6 +47,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-copper: var(--copper);
 }
 
 :root {
@@ -82,6 +83,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --copper: oklch(0.57 0.13 42);
 }
 
 .dark {
@@ -116,6 +118,50 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --copper: oklch(0.75 0.12 50);
+}
+
+/* Signature brush stroke: draws itself under the hero headline on load. */
+@keyframes stroke-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.stroke-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+/* Editor caret inside the app-window mock. */
+@keyframes caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  95% {
+    opacity: 0;
+  }
+}
+
+.caret-blink {
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stroke-draw {
+    animation: stroke-draw 0.9s ease-out 0.35s backwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret-blink {
+    animation: none;
+  }
 }
 
 @layer base {

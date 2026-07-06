@@ -7,6 +7,7 @@
       "dependencies": {
         "@base-ui/react": "1.5.0",
         "@better-auth/drizzle-adapter": "1.6.14",
+        "@dodopayments/better-auth": "^1.6.3",
         "@fontsource-variable/inter": "5.2.8",
         "@icons-pack/react-simple-icons": "13.13.0",
         "@t3-oss/env-core": "0.13.11",
@@ -162,6 +163,10 @@
     "@cloudflare/workers-types": ["@cloudflare/workers-types@4.20260608.1", "", {}, "sha512-Yz90KXPZBB9K/AhsnLaA321s5+i5ZpWZRFbcGx9dWjyknQJXPAS1pK5CJSFEedwY6zoEr1cf2SkpBATL1idsWA=="],
 
     "@cspotcode/source-map-support": ["@cspotcode/source-map-support@0.8.1", "", { "dependencies": { "@jridgewell/trace-mapping": "0.3.9" } }, "sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw=="],
+
+    "@dodopayments/better-auth": ["@dodopayments/better-auth@1.6.3", "", { "dependencies": { "@dodopayments/core": "^0.3.10" }, "peerDependencies": { "better-auth": "^1.4.0", "zod": "^3.25.0 || ^4.0.0" } }, "sha512-UIcfcpV5MFJ90heJ1rdo7Fxnows/6wFyv1hDBNwB1qUNGfrqdL/7WrHdQ1dVHBmL/kZ68OXIDokCxjSGzJqRwA=="],
+
+    "@dodopayments/core": ["@dodopayments/core@0.3.12", "", { "dependencies": { "dodopayments": "^2.31.2", "standardwebhooks": "^1.0.0" }, "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" } }, "sha512-cahX0AmZI9QN6PhXDE24vUa/UBD4qU21iCgyJRC0L7jxX3dQNMwQSfP2ow9xovnrBQxrsebnwwlDoKi5wl20dA=="],
 
     "@dotenvx/dotenvx": ["@dotenvx/dotenvx@1.71.0", "", { "dependencies": { "commander": "^11.1.0", "dotenv": "^17.2.1", "eciesjs": "^0.4.10", "enquirer": "^2.4.1", "execa": "^5.1.1", "fdir": "^6.2.0", "ignore": "^5.3.0", "object-treeify": "1.1.33", "picomatch": "^4.0.4", "which": "^4.0.0", "yocto-spinner": "^1.1.0" }, "bin": { "dotenvx": "src/cli/dotenvx.js" } }, "sha512-KEUw/mGu+EDRhYWRTNGHIimVCs9NvMFaIXOGrHSXoCteKLE5EsJnmPjOPpYorjXVg/0xG0fbdVw720azw1z4ag=="],
 

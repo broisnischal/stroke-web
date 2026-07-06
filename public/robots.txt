@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /app
+Disallow: /login
+Disallow: /signup
+Disallow: /api/
+
+Sitemap: https://stroke.click/sitemap.xml

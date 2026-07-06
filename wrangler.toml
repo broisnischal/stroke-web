@@ -16,9 +16,11 @@ migrations_dir = "drizzle"
 
 [vars]
 VITE_BASE_URL = "https://stroke.click"
-DODO_ENVIRONMENT = "test_mode"
+DODO_ENVIRONMENT = "live_mode"
 # Secrets: set via wrangler secret put <NAME>
 # DODO_PAYMENTS_API_KEY, DODO_WEBHOOK_KEY, DODO_PRODUCT_ID, LICENSE_PRIVATE_KEY_HEX
+# DODO_TEAM_PRODUCT_ID (optional) — enables the $99 Team plan covering an email domain
+# GITHUB_TOKEN (optional) — raises the GitHub API rate limit for /api/releases
 
 [assets]
 directory = "./public"
