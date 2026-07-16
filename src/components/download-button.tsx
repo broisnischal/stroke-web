@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { DownloadIcon, MonitorIcon } from "lucide-react";
+import posthog from "posthog-js";
 
 import { buttonVariants } from "#/components/ui/button";
 import {
@@ -36,6 +37,14 @@ export function SmartDownloadButton({
       {platform && asset ? (
         <a
           href={asset.browser_download_url}
+          onClick={() =>
+            posthog.capture("download_clicked", {
+              os: platform.os,
+              arch: platform.arch,
+              version,
+              asset: asset.name,
+            })
+          }
           className={buttonVariants({ variant, size, className })}
         >
           <DownloadIcon className="size-4" />

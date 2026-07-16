@@ -5,6 +5,7 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
+import { PostHogProvider } from "#/components/posthog-provider";
 import { ThemeProvider } from "#/components/theme-provider";
 import { Toaster } from "#/components/ui/sonner";
 import type { AuthQueryResult } from "#/lib/auth/queries";
@@ -61,8 +62,10 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
       </head>
       <body>
         <ThemeProvider>
-          {children}
-          <Toaster richColors />
+          <PostHogProvider>
+            {children}
+            <Toaster richColors />
+          </PostHogProvider>
         </ThemeProvider>
 
         <TanStackDevtools

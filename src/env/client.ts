@@ -9,6 +9,9 @@ export const env = createEnv({
     // https://test.checkout.dodopayments.com/buy/pdt_xxxxxxxx (test mode)
     // https://checkout.dodopayments.com/buy/pdt_xxxxxxxx (live mode)
     VITE_DODO_CHECKOUT_URL: z.url().optional(),
+    // PostHog analytics. Leave unset to disable (e.g. local dev).
+    VITE_POSTHOG_KEY: z.string().optional(),
+    VITE_POSTHOG_HOST: z.url().default("https://us.i.posthog.com"),
   },
   runtimeEnv: import.meta.env,
 });

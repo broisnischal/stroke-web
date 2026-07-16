@@ -11,6 +11,7 @@ import {
   ShieldCheckIcon,
   ZapIcon,
 } from "lucide-react";
+import posthog from "posthog-js";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -146,7 +147,11 @@ function Dashboard() {
                 <ShieldCheckIcon className="size-3.5 shrink-0" />
                 Secure checkout via Dodo Payments
               </p>
-              <Link to="/app/billing" className={buttonVariants({ size: "sm" })}>
+              <Link
+                to="/app/billing"
+                onClick={() => posthog.capture("buy_license_clicked", { source: "app_home" })}
+                className={buttonVariants({ size: "sm" })}
+              >
                 <KeyRoundIcon className="size-3.5" />
                 Buy license
               </Link>

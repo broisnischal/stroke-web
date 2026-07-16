@@ -1,4 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import posthog from "posthog-js";
+import { useEffect } from "react";
 
 import { authQueryOptions } from "#/lib/auth/queries";
 import { noIndex } from "#/lib/seo";
@@ -36,6 +38,17 @@ export const Route = createFileRoute("/_auth")({
     // return context for use in child routes & loaders
     return { user };
   },
-  component: Outlet,
+  component: AuthLayout,
   head: noIndex,
 });
+
+function AuthLayout() {
+  const { user } = Route.useRouteContext();
+
+  useEffect(() => {
+    if (!user) return;
+    posthog.identify(user.id, { email: user.email, name: user.name });
+  }, [user]);
+
+  return <Outlet />;
+}

@@ -25,7 +25,7 @@ import {
   TerminalIcon,
 } from "lucide-react";
 
-import { AppWindow } from "#/components/app-window";
+import { AppWindow, VideoDemo } from "#/components/app-window";
 import { SmartDownloadButton } from "#/components/download-button";
 import { BrushStroke, SiteFooter, SiteHeader } from "#/components/site-chrome";
 import { buttonVariants } from "#/components/ui/button";
@@ -38,6 +38,7 @@ export function LandingPage() {
       <SiteHeader />
       <main>
         <Hero />
+        <Demo />
         <Pillars />
         <Databases />
         <Features />
@@ -91,6 +92,26 @@ function Hero() {
         </div>
 
         <AppWindow className="mt-14 md:mt-20" />
+      </div>
+    </section>
+  );
+}
+
+function Demo() {
+  return (
+    <section className="border-b border-border/40">
+      <div className="mx-auto max-w-4xl px-6 py-16 md:py-20">
+        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+          See it in action
+        </p>
+        <h2 className="mt-3 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
+          A quick tour of Stroke
+        </h2>
+        <VideoDemo
+          videoId="xmeVKZShJtQ"
+          title="A quick tour of the Stroke database client"
+          className="mt-10"
+        />
       </div>
     </section>
   );

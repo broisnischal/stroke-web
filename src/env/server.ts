@@ -25,6 +25,9 @@ export const env = createEnv({
     PLANETSCALE_CLIENT_SECRET: z.string().optional(),
     PRISMA_CLIENT_SECRET: z.string().optional(),
 
+    // PostHog personal API key (server-side API / feature-flag local eval), optional
+    POSTHOG_PERSONAL_API_KEY: z.string().optional(),
+
     // GitHub API token for release listings, optional (raises the rate
     // limit from 60 to 5000 requests/hour; no scopes needed for public repos)
     GITHUB_TOKEN: z.string().optional(),

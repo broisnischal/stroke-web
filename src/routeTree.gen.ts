@@ -18,6 +18,7 @@ import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as GuestRouteRouteImport } from './routes/_guest/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IngestSplatRouteImport } from './routes/ingest/$'
 import { Route as ApiReleasesRouteImport } from './routes/api/releases'
 import { Route as ApiChangelogRouteImport } from './routes/api/changelog'
 import { Route as GuestSignupRouteImport } from './routes/_guest/signup'
@@ -80,6 +81,11 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IngestSplatRoute = IngestSplatRouteImport.update({
+  id: '/ingest/$',
+  path: '/ingest/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiReleasesRoute = ApiReleasesRouteImport.update({
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof GuestSignupRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/ingest/$': typeof IngestSplatRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
   '/app/support': typeof AuthAppSupportRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/signup': typeof GuestSignupRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/ingest/$': typeof IngestSplatRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
   '/app/support': typeof AuthAppSupportRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/_guest/signup': typeof GuestSignupRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/ingest/$': typeof IngestSplatRoute
   '/_auth/app/billing': typeof AuthAppBillingRoute
   '/_auth/app/downloads': typeof AuthAppDownloadsRoute
   '/_auth/app/support': typeof AuthAppSupportRoute
@@ -287,6 +296,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/changelog'
     | '/api/releases'
+    | '/ingest/$'
     | '/app/billing'
     | '/app/downloads'
     | '/app/support'
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/changelog'
     | '/api/releases'
+    | '/ingest/$'
     | '/app/billing'
     | '/app/downloads'
     | '/app/support'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/_guest/signup'
     | '/api/changelog'
     | '/api/releases'
+    | '/ingest/$'
     | '/_auth/app/billing'
     | '/_auth/app/downloads'
     | '/_auth/app/support'
@@ -375,6 +387,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiChangelogRoute: typeof ApiChangelogRoute
   ApiReleasesRoute: typeof ApiReleasesRoute
+  IngestSplatRoute: typeof IngestSplatRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiLicenseActivateRoute: typeof ApiLicenseActivateRoute
   ApiLicenseCheckRoute: typeof ApiLicenseCheckRoute
@@ -451,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ingest/$': {
+      id: '/ingest/$'
+      path: '/ingest/$'
+      fullPath: '/ingest/$'
+      preLoaderRoute: typeof IngestSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/releases': {
@@ -652,6 +672,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiChangelogRoute: ApiChangelogRoute,
   ApiReleasesRoute: ApiReleasesRoute,
+  IngestSplatRoute: IngestSplatRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiLicenseActivateRoute: ApiLicenseActivateRoute,
   ApiLicenseCheckRoute: ApiLicenseCheckRoute,
