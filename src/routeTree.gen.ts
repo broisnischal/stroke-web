@@ -34,8 +34,11 @@ import { Route as ApiLicenseCheckRouteImport } from './routes/api/license/check'
 import { Route as ApiLicenseActivateRouteImport } from './routes/api/license/activate'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthAppSupportRouteImport } from './routes/_auth/app/support'
+import { Route as AuthAppReviewsRouteImport } from './routes/_auth/app/reviews'
 import { Route as AuthAppDownloadsRouteImport } from './routes/_auth/app/downloads'
 import { Route as AuthAppBillingRouteImport } from './routes/_auth/app/billing'
+import { Route as ApiAdminReviewsModerateRouteImport } from './routes/api/admin/reviews/moderate'
+import { Route as ApiAdminReviewsListRouteImport } from './routes/api/admin/reviews/list'
 import { Route as ApiAdminLicenseUnrevokeRouteImport } from './routes/api/admin/license/unrevoke'
 import { Route as ApiAdminLicenseRevokeRouteImport } from './routes/api/admin/license/revoke'
 import { Route as ApiAdminLicenseInfoRouteImport } from './routes/api/admin/license/info'
@@ -163,6 +166,11 @@ const AuthAppSupportRoute = AuthAppSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => AuthAppRouteRoute,
 } as any)
+const AuthAppReviewsRoute = AuthAppReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AuthAppRouteRoute,
+} as any)
 const AuthAppDownloadsRoute = AuthAppDownloadsRouteImport.update({
   id: '/downloads',
   path: '/downloads',
@@ -172,6 +180,16 @@ const AuthAppBillingRoute = AuthAppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
   getParentRoute: () => AuthAppRouteRoute,
+} as any)
+const ApiAdminReviewsModerateRoute = ApiAdminReviewsModerateRouteImport.update({
+  id: '/api/admin/reviews/moderate',
+  path: '/api/admin/reviews/moderate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminReviewsListRoute = ApiAdminReviewsListRouteImport.update({
+  id: '/api/admin/reviews/list',
+  path: '/api/admin/reviews/list',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminLicenseUnrevokeRoute = ApiAdminLicenseUnrevokeRouteImport.update({
   id: '/api/admin/license/unrevoke',
@@ -205,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/ingest/$': typeof IngestSplatRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
+  '/app/reviews': typeof AuthAppReviewsRoute
   '/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
@@ -218,6 +237,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
+  '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -234,6 +255,7 @@ export interface FileRoutesByTo {
   '/ingest/$': typeof IngestSplatRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
+  '/app/reviews': typeof AuthAppReviewsRoute
   '/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
@@ -247,6 +269,8 @@ export interface FileRoutesByTo {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
+  '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -267,6 +291,7 @@ export interface FileRoutesById {
   '/ingest/$': typeof IngestSplatRoute
   '/_auth/app/billing': typeof AuthAppBillingRoute
   '/_auth/app/downloads': typeof AuthAppDownloadsRoute
+  '/_auth/app/reviews': typeof AuthAppReviewsRoute
   '/_auth/app/support': typeof AuthAppSupportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
@@ -280,6 +305,8 @@ export interface FileRoutesById {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
+  '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -299,6 +326,7 @@ export interface FileRouteTypes {
     | '/ingest/$'
     | '/app/billing'
     | '/app/downloads'
+    | '/app/reviews'
     | '/app/support'
     | '/api/auth/$'
     | '/api/license/activate'
@@ -312,6 +340,8 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/admin/reviews/list'
+    | '/api/admin/reviews/moderate'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -328,6 +358,7 @@ export interface FileRouteTypes {
     | '/ingest/$'
     | '/app/billing'
     | '/app/downloads'
+    | '/app/reviews'
     | '/app/support'
     | '/api/auth/$'
     | '/api/license/activate'
@@ -341,6 +372,8 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/admin/reviews/list'
+    | '/api/admin/reviews/moderate'
   id:
     | '__root__'
     | '/'
@@ -360,6 +393,7 @@ export interface FileRouteTypes {
     | '/ingest/$'
     | '/_auth/app/billing'
     | '/_auth/app/downloads'
+    | '/_auth/app/reviews'
     | '/_auth/app/support'
     | '/api/auth/$'
     | '/api/license/activate'
@@ -373,6 +407,8 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/admin/reviews/list'
+    | '/api/admin/reviews/moderate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -399,6 +435,8 @@ export interface RootRouteChildren {
   ApiAdminLicenseInfoRoute: typeof ApiAdminLicenseInfoRoute
   ApiAdminLicenseRevokeRoute: typeof ApiAdminLicenseRevokeRoute
   ApiAdminLicenseUnrevokeRoute: typeof ApiAdminLicenseUnrevokeRoute
+  ApiAdminReviewsListRoute: typeof ApiAdminReviewsListRoute
+  ApiAdminReviewsModerateRoute: typeof ApiAdminReviewsModerateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -578,6 +616,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAppSupportRouteImport
       parentRoute: typeof AuthAppRouteRoute
     }
+    '/_auth/app/reviews': {
+      id: '/_auth/app/reviews'
+      path: '/reviews'
+      fullPath: '/app/reviews'
+      preLoaderRoute: typeof AuthAppReviewsRouteImport
+      parentRoute: typeof AuthAppRouteRoute
+    }
     '/_auth/app/downloads': {
       id: '/_auth/app/downloads'
       path: '/downloads'
@@ -591,6 +636,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/billing'
       preLoaderRoute: typeof AuthAppBillingRouteImport
       parentRoute: typeof AuthAppRouteRoute
+    }
+    '/api/admin/reviews/moderate': {
+      id: '/api/admin/reviews/moderate'
+      path: '/api/admin/reviews/moderate'
+      fullPath: '/api/admin/reviews/moderate'
+      preLoaderRoute: typeof ApiAdminReviewsModerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/reviews/list': {
+      id: '/api/admin/reviews/list'
+      path: '/api/admin/reviews/list'
+      fullPath: '/api/admin/reviews/list'
+      preLoaderRoute: typeof ApiAdminReviewsListRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/admin/license/unrevoke': {
       id: '/api/admin/license/unrevoke'
@@ -619,6 +678,7 @@ declare module '@tanstack/react-router' {
 interface AuthAppRouteRouteChildren {
   AuthAppBillingRoute: typeof AuthAppBillingRoute
   AuthAppDownloadsRoute: typeof AuthAppDownloadsRoute
+  AuthAppReviewsRoute: typeof AuthAppReviewsRoute
   AuthAppSupportRoute: typeof AuthAppSupportRoute
   AuthAppIndexRoute: typeof AuthAppIndexRoute
 }
@@ -626,6 +686,7 @@ interface AuthAppRouteRouteChildren {
 const AuthAppRouteRouteChildren: AuthAppRouteRouteChildren = {
   AuthAppBillingRoute: AuthAppBillingRoute,
   AuthAppDownloadsRoute: AuthAppDownloadsRoute,
+  AuthAppReviewsRoute: AuthAppReviewsRoute,
   AuthAppSupportRoute: AuthAppSupportRoute,
   AuthAppIndexRoute: AuthAppIndexRoute,
 }
@@ -684,6 +745,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminLicenseInfoRoute: ApiAdminLicenseInfoRoute,
   ApiAdminLicenseRevokeRoute: ApiAdminLicenseRevokeRoute,
   ApiAdminLicenseUnrevokeRoute: ApiAdminLicenseUnrevokeRoute,
+  ApiAdminReviewsListRoute: ApiAdminReviewsListRoute,
+  ApiAdminReviewsModerateRoute: ApiAdminReviewsModerateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

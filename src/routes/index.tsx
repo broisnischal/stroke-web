@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { LandingPage } from "#/components/landing-page";
+import { approvedReviewsQueryOptions } from "#/lib/reviews/functions";
 import { seo, SITE_URL } from "#/lib/seo";
 
 const STRUCTURED_DATA = {
@@ -21,6 +22,11 @@ const STRUCTURED_DATA = {
 };
 
 export const Route = createFileRoute("/")({
+  // Await so approved reviews are in the SSR HTML (SEO + no layout shift),
+  // not just the client-hydrated cache.
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(approvedReviewsQueryOptions());
+  },
   head: () => ({
     ...seo({
       title: "Stroke — One studio for every database you run",

@@ -10,6 +10,7 @@ import {
   SiSqlite,
   SiTurso,
 } from "@icons-pack/react-simple-icons";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   BotIcon,
@@ -30,6 +31,7 @@ import { SmartDownloadButton } from "#/components/download-button";
 import { BrushStroke, SiteFooter, SiteHeader } from "#/components/site-chrome";
 import { buttonVariants } from "#/components/ui/button";
 import { useAuth } from "#/lib/auth/hooks";
+import { approvedReviewsQueryOptions } from "#/lib/reviews/functions";
 import { cn } from "#/lib/utils";
 
 export function LandingPage() {
@@ -42,6 +44,7 @@ export function LandingPage() {
         <Pillars />
         <Databases />
         <Features />
+        <Reviews />
         <Pricing />
         <Faq />
         <ClosingCta />
@@ -280,6 +283,54 @@ function Features() {
               <h3 className="text-sm font-semibold">{f.title}</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function initialsFrom(name: string) {
+  return name.trim().charAt(0).toUpperCase() || "?";
+}
+
+function Reviews() {
+  const { data: reviews } = useQuery(approvedReviewsQueryOptions());
+
+  // Nothing approved yet → don't render an empty section.
+  if (!reviews || reviews.length === 0) return null;
+
+  return (
+    <section id="reviews" className="scroll-mt-16 border-b border-border/40">
+      <div className="mx-auto max-w-4xl px-6 py-14">
+        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">Reviews</p>
+        <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
+          What people say about Stroke
+        </h2>
+
+        <div className="mt-10 gap-4 [column-fill:_balance] sm:columns-2 lg:columns-3">
+          {reviews.map((r) => (
+            <figure
+              key={r.id}
+              className="mb-4 flex break-inside-avoid flex-col gap-4 rounded-lg border border-border/50 bg-muted/20 p-5"
+            >
+              <blockquote className="text-sm leading-relaxed text-foreground/90">
+                “{r.body}”
+              </blockquote>
+              <figcaption className="mt-auto flex items-center gap-2.5">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground/8 text-[10px] font-semibold text-muted-foreground uppercase ring-1 ring-border/60">
+                  {initialsFrom(r.authorName)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-medium">{r.authorName}</span>
+                  {r.title ? (
+                    <span className="block truncate text-[11px] text-muted-foreground">
+                      {r.title}
+                    </span>
+                  ) : null}
+                </span>
+              </figcaption>
+            </figure>
           ))}
         </div>
       </div>

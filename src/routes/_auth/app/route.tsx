@@ -1,6 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet, useMatchRoute, useRouter } from "@tanstack/react-router";
-import { DownloadIcon, HelpCircleIcon, LayoutDashboardIcon, LogOutIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  HelpCircleIcon,
+  LayoutDashboardIcon,
+  LogOutIcon,
+  StarIcon,
+} from "lucide-react";
 
 import { StrokeIcon } from "#/components/stroke-icon";
 import { ThemeToggle } from "#/components/theme-toggle";
@@ -15,6 +21,7 @@ export const Route = createFileRoute("/_auth/app")({
 const NAV_ITEMS = [
   { to: "/app" as const, label: "Dashboard", icon: LayoutDashboardIcon, exact: true },
   { to: "/app/downloads" as const, label: "Downloads", icon: DownloadIcon, exact: false },
+  { to: "/app/reviews" as const, label: "Reviews", icon: StarIcon, exact: false },
   { to: "/app/support" as const, label: "Support", icon: HelpCircleIcon, exact: false },
 ];
 
@@ -24,7 +31,7 @@ function NavLink({
   icon: Icon,
   exact,
 }: {
-  to: "/app" | "/app/downloads" | "/app/support";
+  to: "/app" | "/app/downloads" | "/app/reviews" | "/app/support";
   label: string;
   icon: React.ElementType;
   exact: boolean;
