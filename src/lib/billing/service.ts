@@ -156,7 +156,7 @@ export async function getSubscription(userId: string) {
 }
 
 /**
- * True when the user already owns Stroke — an active subscription record or a
+ * True when the user already owns Stroke: an active subscription record or a
  * non-revoked license. Used to block a second purchase before checkout.
  */
 export async function userHasActiveLicense(userId: string): Promise<boolean> {
@@ -351,7 +351,7 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
         return;
       }
 
-      // Upsert a lifetime subscription — this is the primary event that grants Pro access.
+      // Upsert a lifetime subscription. This is the primary event that grants Pro access.
       const existingSub = await db
         .select({ id: subscriptions.id })
         .from(subscriptions)
@@ -393,7 +393,7 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
 
       const license = await getOrIssueLicense(resolvedUserId, resolvedEmail);
 
-      // First successful payment for this user — confirm the purchase by email.
+      // First successful payment for this user, so confirm the purchase by email.
       await notifyPurchaseSuccess({
         userId: resolvedUserId,
         email: resolvedEmail,
@@ -406,7 +406,7 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
     }
 
     case "payment.failed": {
-      // A failed attempt makes no DB changes — we just notify the user so they
+      // A failed attempt makes no DB changes; we just notify the user so they
       // can retry. Resolve their address from metadata userId, then email.
       let email = data.email;
       let name: string | undefined;
@@ -461,7 +461,7 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
         .where(eq(payments.providerPaymentId, data.paymentId));
 
       // If this payment backed a Team domain, stop covering new members.
-      // Already-issued member licenses are left intact — revoke them via the
+      // Already-issued member licenses are left intact; revoke them via the
       // admin endpoint if a refund should fully cut off access.
       await db
         .update(enterpriseDomains)

@@ -63,7 +63,7 @@ function ReviewsPage() {
   const submit = useMutation({
     mutationFn: (input: { body: string; title?: string }) => $submitReview({ data: input }),
     onSuccess: async () => {
-      toast.success("Review submitted — it'll show once approved.");
+      toast.success("Review submitted. It'll show on the site once approved.");
       await queryClient.invalidateQueries({ queryKey: ["reviews"] });
     },
     onError: (err) => {

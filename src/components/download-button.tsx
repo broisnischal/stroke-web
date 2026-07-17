@@ -52,7 +52,7 @@ export function SmartDownloadButton({
           {version && <span className="ml-1 text-xs opacity-70">{version}</span>}
         </a>
       ) : (
-        // No detection yet or no matching asset — send them to the download page
+        // No detection yet or no matching asset, so send them to the download page
         <Link to="/download" className={buttonVariants({ variant, size, className })}>
           <DownloadIcon className="size-4" />
           Download

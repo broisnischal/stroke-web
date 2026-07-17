@@ -29,7 +29,7 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     ...seo({
-      title: "Stroke — One studio for every database you run",
+      title: "Stroke · One studio for every database you run",
       description:
         "A fast database GUI for PostgreSQL, MySQL, SQLite, SQL Server, ClickHouse, DuckDB, and more. Browse schemas, edit data, write SQL, and let AI query your database via MCP. Free to try, $9.99 to own it forever.",
       path: "/",

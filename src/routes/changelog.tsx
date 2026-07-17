@@ -11,7 +11,7 @@ import { seo } from "#/lib/seo";
 export const Route = createFileRoute("/changelog")({
   head: () =>
     seo({
-      title: "Changelog — Stroke",
+      title: "Changelog · Stroke",
       description: "Every update to Stroke: new features, fixes, and changes, release by release.",
       path: "/changelog",
     }),

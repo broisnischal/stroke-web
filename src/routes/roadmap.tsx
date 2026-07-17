@@ -10,7 +10,7 @@ import { cn } from "#/lib/utils";
 export const Route = createFileRoute("/roadmap")({
   head: () =>
     seo({
-      title: "Roadmap — Stroke",
+      title: "Roadmap · Stroke",
       description:
         "What's being built in Stroke right now, what's planned next, and what's still taking shape, including provider adapters for Neon, Prisma, Supabase, and more.",
       path: "/roadmap",

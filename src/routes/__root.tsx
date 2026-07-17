@@ -28,7 +28,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     // Default social/meta tags; every public route overrides them via seo().
     // Canonical links are per-route only, so they aren't emitted here.
     const base = seo({
-      title: "Stroke — A fast, native desktop database client",
+      title: "Stroke · A fast, native desktop database client",
       description:
         "A fast database GUI for PostgreSQL, MySQL, SQLite, SQL Server, ClickHouse, DuckDB, and more. Browse schemas, edit data, write SQL, and let AI query your database via MCP. Native Rust, under 40 MB of memory.",
       path: "/",

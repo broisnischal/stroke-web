@@ -22,7 +22,7 @@ export interface SendEmailParams {
  *
  * Uses the REST API directly (works on Cloudflare Workers without the Node
  * SDK). Never throws: on misconfiguration or a Plunk error it logs and
- * returns false so callers — e.g. the billing webhook — never fail because of
+ * returns false so callers (e.g. the billing webhook) never fail because of
  * mail delivery.
  *
  * @see https://docs.useplunk.com/api-reference/transactional/send
@@ -30,7 +30,7 @@ export interface SendEmailParams {
 export async function sendTransactionalEmail(params: SendEmailParams): Promise<boolean> {
   const apiKey = env.PLUNK_API_KEY;
   if (!apiKey) {
-    console.warn("[mail] PLUNK_API_KEY not set — skipping email to", params.to);
+    console.warn("[mail] PLUNK_API_KEY not set, skipping email to", params.to);
     return false;
   }
 

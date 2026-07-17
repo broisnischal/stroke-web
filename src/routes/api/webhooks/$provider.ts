@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/webhooks/$provider")({
         try {
           await handleBillingEvent(event);
         } catch (err) {
-          // Return 200 so the provider doesn't retry — log and investigate separately
+          // Return 200 so the provider doesn't retry; log and investigate separately
           console.error(`[webhook/${params.provider}] event handler error:`, event.type, err);
         }
 

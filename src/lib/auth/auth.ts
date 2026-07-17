@@ -85,7 +85,7 @@ export const auth = betterAuth({
         const existing = await getEnterpriseDomain(domain);
         if (existing && existing.status === "active") {
           throw new APIError("CONFLICT", {
-            message: `${domain} already has a Stroke Team license — everyone on your domain is covered, so there's nothing more to buy.`,
+            message: `${domain} already has a Stroke Team license. Everyone on your domain is covered, so there's nothing more to buy.`,
           });
         }
       } else if (await userHasActiveLicense(session.user.id)) {

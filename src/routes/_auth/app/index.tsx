@@ -129,7 +129,7 @@ function Dashboard() {
                 <MonitorIcon className="size-3 shrink-0" />
                 {license.expiresAt
                   ? `Test license · expires ${new Date(license.expiresAt).toLocaleDateString()}`
-                  : "Lifetime — no expiry, no renewals"}
+                  : "Lifetime license · no expiry, no renewals"}
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ function Dashboard() {
         )}
       </section>
 
-      {/* ── PLAN — rendered as a DB result row ── */}
+      {/* ── PLAN: rendered as a DB result row ── */}
       {subscription && (
         <section className="space-y-2.5">
           <SectionLabel>Plan</SectionLabel>
@@ -200,7 +200,7 @@ function Dashboard() {
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                     {subscription.createdAt
                       ? new Date(subscription.createdAt).toLocaleDateString("en-CA")
-                      : "—"}
+                      : "n/a"}
                   </td>
                 </tr>
               </tbody>

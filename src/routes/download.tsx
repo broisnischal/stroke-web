@@ -34,7 +34,7 @@ import { cn } from "#/lib/utils";
 export const Route = createFileRoute("/download")({
   head: () =>
     seo({
-      title: "Download Stroke — macOS, Windows & Linux",
+      title: "Download Stroke for macOS, Windows & Linux",
       description:
         "Download Stroke for macOS (Apple Silicon and Intel), Windows, and Linux, or install it with Homebrew or Scoop. Free to try, $9.99 to own it forever.",
       path: "/download",

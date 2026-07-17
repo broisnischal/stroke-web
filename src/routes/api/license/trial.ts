@@ -14,7 +14,7 @@ const DAY_MS = 86_400_000;
  * Server-authoritative trial clock, keyed by device fingerprint. The desktop
  * app calls this on launch with its `device_id` (and optionally the local
  * `started_at` it has on file). The server records the start the first time it
- * sees a device and always keeps the EARLIEST start thereafter — so a
+ * sees a device and always keeps the EARLIEST start thereafter, so a
  * reinstall or disk wipe can't reset the trial, and the clock can't be moved
  * forward.
  *

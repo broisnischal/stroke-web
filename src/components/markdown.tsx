@@ -96,7 +96,7 @@ function parseBlocks(text: string): ReactNode[] {
       continue;
     }
 
-    // heading — level-aware so sections read as a hierarchy. Within a
+    // heading, level-aware so sections read as a hierarchy. Within a
     // changelog entry, "###" are category labels (Performance, Fixes, …) and
     // "####" are finer sub-headings.
     const heading = /^(#{1,6})\s+(.*)$/.exec(line);

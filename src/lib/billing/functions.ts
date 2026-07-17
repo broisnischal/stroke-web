@@ -15,7 +15,7 @@ import { db } from "#/lib/db";
 import { subscriptions } from "#/lib/db/schema";
 import { getLicense, getOrIssueLicense, resolveLicense } from "#/lib/license";
 
-// Checkout is handled by the @dodopayments/better-auth plugin — see
+// Checkout is handled by the @dodopayments/better-auth plugin. See
 // src/lib/auth/auth.ts. Clients call authClient.dodopayments.checkoutSession().
 
 export const $getSubscription = createServerFn({ method: "GET" })
@@ -33,9 +33,9 @@ export const $getLicense = createServerFn({ method: "GET" })
 
 /**
  * Enterprise/Team status for the current user:
- * - "owner"  — bought Team for their domain (includes seat count)
- * - "member" — covered by someone else's Team purchase on their domain
- * - "none"   — not part of any Team plan
+ * - "owner": bought Team for their domain (includes seat count)
+ * - "member": covered by someone else's Team purchase on their domain
+ * - "none": not part of any Team plan
  */
 export const $getEnterprise = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -69,7 +69,7 @@ export const $recoverLicense = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .inputValidator(z.object({ sessionId: z.string().optional() }))
   .handler(async ({ context, data }) => {
-    // 1. Already have a license — return it immediately.
+    // 1. Already have a license, so return it immediately.
     const existing = await getLicense(context.user.id, context.user.email);
     if (existing) return existing;
 
@@ -94,7 +94,7 @@ export const $recoverLicense = createServerFn({ method: "POST" })
           return getOrIssueLicense(context.user.id, context.user.email);
         }
       } catch {
-        // Dodo API failure — fall through to subscription check.
+        // Dodo API failure; fall through to subscription check.
       }
     }
 

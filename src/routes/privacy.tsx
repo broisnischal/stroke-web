@@ -7,7 +7,7 @@ import { seo } from "#/lib/seo";
 export const Route = createFileRoute("/privacy")({
   head: () =>
     seo({
-      title: "Privacy Policy — Stroke",
+      title: "Privacy Policy · Stroke",
       description:
         "What Stroke collects, what it doesn't, and how your data is handled, including the guarantee that your database credentials never leave your device.",
       path: "/privacy",
@@ -44,7 +44,7 @@ function PrivacyPage() {
           queries, dashboards, and preferences are stored locally on your device. They are read by
           the app to do its job and are never uploaded to us. If you use the built-in AI chat or MCP
           server with a third-party AI client, data flows directly between your machine and the
-          provider you configured — under that provider's terms, not ours.
+          provider you configured, under that provider's terms, not ours.
         </p>
       </LegalSection>
 
@@ -58,8 +58,8 @@ function PrivacyPage() {
             "Your name, email address, and avatar from the provider you chose. We never see your password.",
             "Session data (a cookie that keeps you signed in, plus IP address and user agent for session security).",
             <>
-              <strong>License records</strong>: your license key, plan, and — when you activate the
-              app on a device — a device identifier and hostname, used to enforce the 2-device limit
+              <strong>License records</strong>: your license key, plan, and (when you activate the
+              app on a device) a device identifier and hostname, used to enforce the 2-device limit
               and to let you deactivate devices from your dashboard.
             </>,
             <>
@@ -87,7 +87,7 @@ function PrivacyPage() {
         </p>
         <p>
           Beyond those, we use privacy-friendly product analytics (PostHog) to understand which
-          pages are useful — but only after you accept through the cookie banner. If you decline, no
+          pages are useful, but only after you accept through the cookie banner. If you decline, no
           analytics cookies are set and nothing is tracked; the site works exactly the same either
           way. Your choice is remembered locally, and you can change it by clearing this site's
           storage. We never use advertising cookies.
@@ -130,7 +130,7 @@ function PrivacyPage() {
       <LegalSection number="08" title="Your rights">
         <p>
           You can access and update your account details from your dashboard. You may request a copy
-          of your data, correction, or deletion at any time — depending on where you live, laws like
+          of your data, correction, or deletion at any time. Depending on where you live, laws like
           the GDPR or CCPA give you these rights formally, but we honor them for everyone. Contact
           us and we'll handle it.
         </p>
@@ -138,8 +138,8 @@ function PrivacyPage() {
 
       <LegalSection number="09" title="Changes to this policy">
         <p>
-          If we ever change what we collect — for example, adding opt-in crash reporting to the app
-          — we will update this page, change the date at the top, and call out the change in the
+          If we ever change what we collect, for example by adding opt-in crash reporting to the
+          app, we will update this page, change the date at the top, and call out the change in the
           release notes before it ships.
         </p>
       </LegalSection>

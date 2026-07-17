@@ -417,7 +417,7 @@ function Pricing() {
                 to={user ? "/app/billing" : "/login"}
                 className={buttonVariants({ variant: "default", size: "default" })}
               >
-                Buy Stroke — $9.99
+                Buy Stroke for $9.99
               </Link>
               <p className="mt-3 text-xs text-muted-foreground">
                 One-time payment. No recurring charges.
@@ -432,15 +432,15 @@ function Pricing() {
             <h3 className="text-sm font-semibold">Running a team?</h3>
             <p className="mt-1 max-w-md text-[13px] text-muted-foreground">
               One <strong className="font-medium text-foreground">$99</strong> purchase licenses
-              everyone on your company&apos;s email domain. Each teammate gets their own key — no
-              seats to manage, no per-user fees.
+              everyone on your company&apos;s email domain. Each teammate gets their own key, with
+              no seats to manage and no per-user fees.
             </p>
           </div>
           <Link
             to={user ? "/app/billing" : "/login"}
             className={buttonVariants({ variant: "outline", size: "default" })}
           >
-            Buy Team — $99
+            Buy Team for $99
           </Link>
         </div>
       </div>

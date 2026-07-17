@@ -34,7 +34,7 @@ export function CookieConsent() {
       <p className="text-sm font-medium">Analytics cookies</p>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
         We'd like to use privacy-friendly analytics to see which pages are useful. No ads, no data
-        selling. The site works fully either way — see our{" "}
+        selling. The site works fully either way. See our{" "}
         <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">
           Privacy Policy
         </Link>

@@ -18,9 +18,9 @@ export interface BillingEventData {
   amount?: number;
   currency?: string;
   periodEnd?: Date;
-  /** userId passed in checkout session metadata — used to link webhook events to DB users */
+  /** userId passed in checkout session metadata, used to link webhook events to DB users */
   userId?: string;
-  /** customer email from the payment provider — fallback when userId is missing/stale */
+  /** customer email from the payment provider, used when userId is missing/stale */
   email?: string;
 }
 
