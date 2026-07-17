@@ -86,7 +86,10 @@ export function createDodoProvider(config: {
             data: {
               paymentId: data.payment_id as string | undefined,
               customerId: data.customer_id as string | undefined,
+              amount: data.amount as number | undefined,
+              currency: data.currency as string | undefined,
               userId: meta.userId,
+              email: (data.customer as { email?: string } | undefined)?.email,
             },
           };
 
