@@ -3,7 +3,9 @@ import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect, useRef } from "react";
 
+import { CookieConsent } from "#/components/cookie-consent";
 import { env } from "#/env/client";
+import { getConsent } from "#/lib/consent";
 
 let initialized = false;
 
@@ -17,7 +19,12 @@ function initPostHog() {
     // We send $pageview manually on router navigation (SPA).
     capture_pageview: false,
     capture_pageleave: true,
+    // Consent-gated: capture nothing and set no analytics cookie until the
+    // visitor opts in via <CookieConsent />. capture() is a no-op meanwhile.
+    opt_out_capturing_by_default: true,
   });
+  // Honour a previously granted choice so returning visitors aren't re-asked.
+  if (getConsent() === "accepted") posthog.opt_in_capturing();
   initialized = true;
 }
 
@@ -41,5 +48,10 @@ export function PostHogProvider({ children }: { readonly children: React.ReactNo
   }, [router]);
 
   if (!env.VITE_POSTHOG_KEY) return <>{children}</>;
-  return <PHProvider client={posthog}>{children}</PHProvider>;
+  return (
+    <PHProvider client={posthog}>
+      {children}
+      <CookieConsent />
+    </PHProvider>
+  );
 }

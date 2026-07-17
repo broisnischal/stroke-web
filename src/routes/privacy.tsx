@@ -19,7 +19,7 @@ function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      updated="July 2, 2026"
+      updated="July 17, 2026"
       intro="Stroke is built on a simple boundary: the desktop app works with your databases on your machine, and our servers only handle accounts and licenses. This policy describes what crosses that boundary, what never does, and what your choices are."
     >
       <LegalSection number="01" title="The short version">
@@ -33,7 +33,7 @@ function PrivacyPage() {
               We only hold personal data if you create an account to buy a license: your name,
               email, and license records.
             </>,
-            "We don't run ads, we don't sell data, and the website works without third-party analytics trackers.",
+            "We don't run ads and we never sell data. The website uses privacy-friendly analytics only if you opt in through the cookie banner.",
           ]}
         />
       </LegalSection>
@@ -82,9 +82,15 @@ function PrivacyPage() {
 
       <LegalSection number="05" title="Cookies">
         <p>
-          The website uses only functional cookies: one to keep you signed in and one to remember
-          your light/dark theme preference. There are no third-party advertising or analytics
-          cookies, which is why there is no cookie banner.
+          Two functional cookies are always on: one to keep you signed in and one to remember your
+          light/dark theme preference. These are essential to the site and don't require consent.
+        </p>
+        <p>
+          Beyond those, we use privacy-friendly product analytics (PostHog) to understand which
+          pages are useful — but only after you accept through the cookie banner. If you decline, no
+          analytics cookies are set and nothing is tracked; the site works exactly the same either
+          way. Your choice is remembered locally, and you can change it by clearing this site's
+          storage. We never use advertising cookies.
         </p>
       </LegalSection>
 
@@ -103,6 +109,10 @@ function PrivacyPage() {
             <>
               <strong>GitHub and Google</strong> provide sign-in. Downloads are served from GitHub
               Releases, so fetching an installer is a request to GitHub, not to us.
+            </>,
+            <>
+              <strong>PostHog</strong> provides privacy-friendly website analytics, loaded through a
+              same-origin proxy and only after you opt in. It never receives your database data.
             </>,
           ]}
         />
