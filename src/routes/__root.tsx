@@ -30,7 +30,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     const base = seo({
       title: "Stroke · A fast, native desktop database client",
       description:
-        "A fast database GUI for PostgreSQL, MySQL, SQLite, SQL Server, ClickHouse, DuckDB, and more. Browse schemas, edit data, write SQL, and let AI query your database via MCP. Native Rust, under 40 MB of memory.",
+        "A fast database GUI for PostgreSQL, MySQL, SQLite, SQL Server, ClickHouse, DuckDB, and more. Browse schemas, edit data, write SQL, and let your AI agents query the database via MCP. Built in Rust and Tauri, it launches instantly.",
       path: "/",
     });
     return {

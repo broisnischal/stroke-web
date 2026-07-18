@@ -59,42 +59,57 @@ function Hero() {
     <section className="border-b border-border/40">
       <div className="mx-auto max-w-4xl px-6 py-16 md:py-24">
         <div className="max-w-2xl">
-          <p className="flex items-center gap-2 font-mono text-xs tracking-widest text-muted-foreground uppercase">
+          <p className="animate-fade-up flex items-center gap-2 font-mono text-xs tracking-widest text-muted-foreground uppercase">
             <span className="inline-block h-px w-6 bg-copper" aria-hidden="true" />
-            Native app · Built in Rust
+            Native app · Rust + Tauri
           </p>
 
-          <h1 className="mt-6 text-[2.1rem] leading-[1.08] font-semibold tracking-[-0.035em] text-balance min-[430px]:text-[2.6rem] sm:text-6xl">
-            One studio for{" "}
+          <h1
+            className="animate-fade-up mt-6 text-[1.9rem] leading-[1.05] font-semibold tracking-[-0.03em] text-balance min-[430px]:text-[2.5rem] sm:text-6xl"
+            style={{ animationDelay: "80ms" }}
+          >
+            The database studio for{" "}
             <span className="relative inline-block whitespace-nowrap">
-              every database
+              agents and humans
               <BrushStroke
                 animate
                 className="absolute -bottom-2 left-0 h-2.5 w-full sm:-bottom-3"
               />
-            </span>{" "}
-            you run.
+            </span>
+            .
           </h1>
 
-          <p className="mt-7 max-w-xl text-[15px] leading-[1.7] text-muted-foreground">
+          <p
+            className="animate-fade-up mt-7 max-w-xl text-[15px] leading-[1.7] text-pretty text-muted-foreground"
+            style={{ animationDelay: "160ms" }}
+          >
             Stroke is a fast desktop client for PostgreSQL, MySQL, SQLite, SQL Server, ClickHouse,
-            DuckDB, and more. Browse schemas, edit data inline, write SQL, and let your AI tools
-            query the database through the built-in MCP server. Native Rust, under 40 MB of memory.
+            DuckDB, and more. Browse schemas, edit data inline, and write SQL, while your AI agents
+            query the same database through the built-in MCP server. Built in Rust and Tauri, so it
+            launches instantly and stays out of your way.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-start gap-2.5">
+          <div
+            className="animate-fade-up mt-8 flex flex-wrap items-start gap-2.5"
+            style={{ animationDelay: "240ms" }}
+          >
             <SmartDownloadButton size="default" variant="default" />
             <a href="#pricing" className={buttonVariants({ variant: "ghost", size: "default" })}>
               $9.99 · Own it forever
             </a>
           </div>
 
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p
+            className="animate-fade-up mt-2 text-xs text-muted-foreground"
+            style={{ animationDelay: "300ms" }}
+          >
             Runs on macOS, Windows, and Linux. Free to try, no account needed.
           </p>
         </div>
 
-        <AppWindow className="mt-14 md:mt-20" />
+        <div className="animate-fade-up" style={{ animationDelay: "380ms" }}>
+          <AppWindow className="mt-14 md:mt-20" />
+        </div>
       </div>
     </section>
   );
@@ -122,16 +137,16 @@ function Demo() {
 
 const PILLARS = [
   {
-    title: "Under 40 MB of memory",
-    body: "Stroke is native Rust, not another Electron app hauling a browser around. It stays under 40 MB of memory no matter how large your tables get, launches instantly, and never makes your fans spin.",
+    title: "Built in Rust and Tauri",
+    body: "Stroke is a native app, not another Electron build hauling a whole browser around. It launches in an instant, stays light no matter how large your tables get, and never makes your fans spin.",
   },
   {
-    title: "Works with Claude and Cursor",
-    body: "Stroke ships an MCP server. Connect any MCP client with one click and it can inspect your schemas and run queries for you. An AI chat lives inside the app as well.",
+    title: "Made for agents and people",
+    body: "Stroke ships an MCP server, so Claude, Cursor, or any agent can read your schema and run queries in one click. The same schema-aware AI chat lives right inside the app for you.",
   },
   {
     title: "Yours, not rented",
-    body: "$9.99 buys the app outright. No subscription, no renewals, no locked features. Try everything free, pay when you decide to keep it.",
+    body: "$9.99 buys the app outright. No subscription, no renewals, no locked features. Try everything free, and pay when you decide to keep it.",
   },
 ];
 
@@ -143,7 +158,7 @@ function Pillars() {
           <div key={p.title} className="flex flex-col gap-3 px-6 py-10 md:px-8">
             <BrushStroke className="h-1.5 w-10" />
             <h3 className="text-base font-semibold tracking-tight">{p.title}</h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">{p.body}</p>
+            <p className="text-sm leading-relaxed text-pretty text-muted-foreground">{p.body}</p>
           </div>
         ))}
       </div>
@@ -281,7 +296,7 @@ function Features() {
             >
               <f.icon className="size-4 text-muted-foreground" strokeWidth={1.5} />
               <h3 className="text-sm font-semibold">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+              <p className="text-sm leading-relaxed text-pretty text-muted-foreground">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -312,7 +327,7 @@ function Reviews() {
           {reviews.map((r) => (
             <figure
               key={r.id}
-              className="mb-4 flex break-inside-avoid flex-col gap-4 rounded-lg border border-border/50 bg-muted/20 p-5"
+              className="mb-4 flex break-inside-avoid flex-col gap-4 rounded-lg border border-border/50 bg-muted/20 p-5 transition-colors hover:border-border hover:bg-muted/40"
             >
               <blockquote className="text-sm leading-relaxed text-foreground/90">
                 “{r.body}”
@@ -476,7 +491,9 @@ function Faq() {
           {FAQ_ITEMS.map((item) => (
             <div key={item.q}>
               <h3 className="text-sm font-semibold">{item.q}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+              <p className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground">
+                {item.a}
+              </p>
             </div>
           ))}
         </div>

@@ -51,24 +51,26 @@
 }
 
 :root {
+  /* Neutrals carry a whisper of the copper hue (chroma only; lightness is kept
+     identical to the base scale, so every contrast ratio is unchanged). */
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(0.145 0.006 55);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.145 0.006 55);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.145 0.006 55);
+  --primary: oklch(0.205 0.006 55);
+  --primary-foreground: oklch(0.985 0.002 85);
+  --secondary: oklch(0.97 0.004 75);
+  --secondary-foreground: oklch(0.205 0.006 55);
+  --muted: oklch(0.97 0.004 75);
+  --muted-foreground: oklch(0.556 0.01 60);
+  --accent: oklch(0.97 0.004 75);
+  --accent-foreground: oklch(0.205 0.006 55);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.922 0.004 75);
+  --input: oklch(0.922 0.004 75);
+  --ring: oklch(0.708 0.006 65);
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
@@ -87,20 +89,22 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Warm near-black neutrals: the same copper hue at low chroma, lightness kept
+     identical to the base dark scale so contrast ratios do not move. */
+  --background: oklch(0.145 0.006 62);
+  --foreground: oklch(0.985 0.002 85);
+  --card: oklch(0.205 0.006 62);
+  --card-foreground: oklch(0.985 0.002 85);
+  --popover: oklch(0.205 0.006 62);
+  --popover-foreground: oklch(0.985 0.002 85);
+  --primary: oklch(0.922 0.003 85);
+  --primary-foreground: oklch(0.205 0.006 62);
+  --secondary: oklch(0.269 0.006 62);
+  --secondary-foreground: oklch(0.985 0.002 85);
+  --muted: oklch(0.269 0.006 62);
+  --muted-foreground: oklch(0.712 0.008 70);
+  --accent: oklch(0.269 0.006 62);
+  --accent-foreground: oklch(0.985 0.002 85);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -134,6 +138,25 @@
 .stroke-draw {
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
+}
+
+/* Staggered entrance: content fades and rises into place. Opt-in per element
+   with `.animate-fade-up` plus an inline animation-delay for the stagger. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade-up {
+    animation: fade-up 0.6s cubic-bezier(0.2, 0, 0, 1) backwards;
+  }
 }
 
 /* Editor caret inside the app-window mock. */
@@ -176,6 +199,12 @@
     cursor: pointer;
   }
   html {
-    @apply font-sans;
+    @apply font-sans antialiased;
+    font-synthesis: none;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background-color: --alpha(var(--color-copper) / 25%);
   }
 }

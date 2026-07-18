@@ -101,7 +101,7 @@ export function SiteFooter() {
             </span>
             <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
               A fast, native database studio for PostgreSQL, MySQL, ClickHouse, DuckDB, and more.
-              Built in Rust.
+              Built in Rust and Tauri, for agents and humans.
             </p>
             <BrushStroke className="mt-4 h-1.5 w-16" />
           </div>
