@@ -3,10 +3,10 @@ import {
   SiCloudflare,
   SiCockroachlabs,
   SiDuckdb,
-  SiGooglebigquery,
   SiMariadb,
   SiMysql,
   SiPostgresql,
+  SiRedis,
   SiSqlite,
   SiTurso,
 } from "@icons-pack/react-simple-icons";
@@ -177,7 +177,7 @@ const DATABASES = [
   { name: "CockroachDB", Icon: SiCockroachlabs },
   { name: "Turso / LibSQL", Icon: SiTurso },
   { name: "Cloudflare D1", Icon: SiCloudflare },
-  { name: "BigQuery", Icon: SiGooglebigquery, soon: true },
+  { name: "Redis", Icon: SiRedis, soon: true },
 ] as const;
 
 function Databases() {
