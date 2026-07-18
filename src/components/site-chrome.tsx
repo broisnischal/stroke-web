@@ -1,9 +1,11 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { StrokeIcon } from "#/components/stroke-icon";
 import { ThemeToggle } from "#/components/theme-toggle";
 import { Button } from "#/components/ui/button";
 import { useAuth } from "#/lib/auth/hooks";
+import { changelogQueryOptions } from "#/lib/changelog";
 import { cn } from "#/lib/utils";
 
 export const REPO_URL = "https://github.com/broisnischal/stroke";
@@ -49,6 +51,12 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Warm the changelog cache on hover/focus so the page opens instantly.
+  const prefetchChangelog = () => {
+    void queryClient.prefetchQuery(changelogQueryOptions());
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/90 backdrop-blur-sm">
@@ -60,15 +68,20 @@ export function SiteHeader() {
           </Link>
 
           <nav className="hidden items-center gap-5 sm:flex" aria-label="Main">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const prefetch = link.href === "/changelog" ? prefetchChangelog : undefined;
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onMouseEnter={prefetch}
+                  onFocus={prefetch}
+                  className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </nav>
         </div>
 

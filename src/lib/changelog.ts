@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
 import { REPO_SLUG } from "./releases";
 
@@ -61,12 +61,19 @@ async function fetchChangelog(): Promise<ChangelogEntry[]> {
   return parseChangelog(text);
 }
 
-export function useChangelog() {
-  return useQuery({
+/**
+ * Shared query config so the changelog can be prefetched (e.g. on nav hover)
+ * and read by the page from the same cache entry.
+ */
+export const changelogQueryOptions = () =>
+  queryOptions({
     queryKey: ["changelog"],
     queryFn: fetchChangelog,
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
     retry: 1,
   });
+
+export function useChangelog() {
+  return useQuery(changelogQueryOptions());
 }
