@@ -300,6 +300,15 @@ function Features() {
             </div>
           ))}
         </div>
+
+        <div className="mt-10">
+          <Link
+            to="/features"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            See all features →
+          </Link>
+        </div>
       </div>
     </section>
   );

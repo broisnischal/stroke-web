@@ -42,7 +42,8 @@ export function BrushStroke({
 }
 
 const NAV_LINKS = [
-  { label: "Features", href: "/#features" },
+  { label: "Features", href: "/features" },
+  { label: "Docs", href: "/docs" },
   { label: "Pricing", href: "/#pricing" },
   { label: "Roadmap", href: "/roadmap" },
   { label: "Changelog", href: "/changelog" },
@@ -123,6 +124,16 @@ export function SiteFooter() {
             <div>
               <p className="text-xs font-medium tracking-wide text-foreground">Product</p>
               <ul className="mt-3 space-y-2 text-[13px] text-muted-foreground">
+                <li>
+                  <Link to="/features" className="transition-colors hover:text-foreground">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/docs" className="transition-colors hover:text-foreground">
+                    Docs
+                  </Link>
+                </li>
                 <li>
                   <a href="/#pricing" className="transition-colors hover:text-foreground">
                     Pricing
