@@ -64,3 +64,49 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<b
     return false;
   }
 }
+
+const PLUNK_CONTACTS_URL = "https://api.useplunk.com/v1/contacts";
+
+/**
+ * Create (or upsert) a Plunk contact — used when a new user signs up. Never
+ * throws: logs and returns false on failure so it can't block the signup flow.
+ *
+ * @see https://docs.useplunk.com/api-reference/contacts/create
+ */
+export async function createPlunkContact(params: {
+  email: string;
+  name?: string;
+  subscribed?: boolean;
+}): Promise<boolean> {
+  const apiKey = env.PLUNK_API_KEY;
+  if (!apiKey) {
+    console.warn("[mail] PLUNK_API_KEY not set, skipping contact for", params.email);
+    return false;
+  }
+
+  try {
+    const res = await fetch(PLUNK_CONTACTS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        email: params.email,
+        subscribed: params.subscribed ?? true,
+        ...(params.name ? { data: { name: params.name } } : {}),
+      }),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      console.error(`[mail] Plunk contact failed (${res.status}) for ${params.email}: ${detail}`);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("[mail] Plunk contact threw for", params.email, err);
+    return false;
+  }
+}

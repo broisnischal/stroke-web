@@ -17,6 +17,7 @@ import {
 import { handleBillingEvent, userHasActiveLicense } from "#/lib/billing/service";
 import { db } from "#/lib/db";
 import * as schema from "#/lib/db/schema";
+import { createPlunkContact } from "#/lib/mail/client";
 
 export const dodoClient = new DodoPayments({
   bearerToken: env.DODO_PAYMENTS_API_KEY,
@@ -111,6 +112,18 @@ export const auth = betterAuth({
         },
       };
     }),
+  },
+
+  // Add every new user to Plunk as a contact. Best-effort: createPlunkContact
+  // never throws, so a mail-provider hiccup can't block sign-up.
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await createPlunkContact({ email: user.email, name: user.name });
+        },
+      },
+    },
   },
 
   // https://www.better-auth.com/docs/integrations/tanstack#usage-tips
