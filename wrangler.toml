@@ -8,6 +8,11 @@ preview_urls = true
 # Official custom domain (zone already configured in Cloudflare)
 routes = [{ pattern = "stroke.click", custom_domain = true }]
 
+# Powers the free AI tier (/api/ai/*). The free neuron allocation is per ACCOUNT
+# and shared across all users, so src/lib/ai/free-tier.ts caps usage app-wide.
+[ai]
+binding = "AI"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "stroke-web"
@@ -20,6 +25,8 @@ DODO_ENVIRONMENT = "live_mode"
 # Secrets: set via wrangler secret put <NAME>
 # DODO_PAYMENTS_API_KEY, DODO_WEBHOOK_KEY, DODO_PRODUCT_ID, LICENSE_PRIVATE_KEY_HEX
 # DODO_TEAM_PRODUCT_ID (optional) — enables the $99 Team plan covering an email domain
+# OPENROUTER_POOL_KEY (optional) — free-tier overflow once the Workers AI daily cap
+#   trips. Without it, the free tier simply 429s instead of falling back.
 # GITHUB_TOKEN (optional) — raises the GitHub API rate limit for /api/releases
 
 [assets]

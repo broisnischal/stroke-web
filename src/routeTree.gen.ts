@@ -33,9 +33,12 @@ import { Route as ApiLicenseDeactivateRouteImport } from './routes/api/license/d
 import { Route as ApiLicenseCheckRouteImport } from './routes/api/license/check'
 import { Route as ApiLicenseActivateRouteImport } from './routes/api/license/activate'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAiQuotaRouteImport } from './routes/api/ai/quota'
+import { Route as ApiAiModelsRouteImport } from './routes/api/ai/models'
 import { Route as AuthAppSupportRouteImport } from './routes/_auth/app/support'
 import { Route as AuthAppDownloadsRouteImport } from './routes/_auth/app/downloads'
 import { Route as AuthAppBillingRouteImport } from './routes/_auth/app/billing'
+import { Route as ApiAiChatCompletionsRouteImport } from './routes/api/ai/chat/completions'
 import { Route as ApiAdminLicenseUnrevokeRouteImport } from './routes/api/admin/license/unrevoke'
 import { Route as ApiAdminLicenseRevokeRouteImport } from './routes/api/admin/license/revoke'
 import { Route as ApiAdminLicenseInfoRouteImport } from './routes/api/admin/license/info'
@@ -158,6 +161,16 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiQuotaRoute = ApiAiQuotaRouteImport.update({
+  id: '/api/ai/quota',
+  path: '/api/ai/quota',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiModelsRoute = ApiAiModelsRouteImport.update({
+  id: '/api/ai/models',
+  path: '/api/ai/models',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthAppSupportRoute = AuthAppSupportRouteImport.update({
   id: '/support',
   path: '/support',
@@ -172,6 +185,11 @@ const AuthAppBillingRoute = AuthAppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
   getParentRoute: () => AuthAppRouteRoute,
+} as any)
+const ApiAiChatCompletionsRoute = ApiAiChatCompletionsRouteImport.update({
+  id: '/api/ai/chat/completions',
+  path: '/api/ai/chat/completions',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminLicenseUnrevokeRoute = ApiAdminLicenseUnrevokeRouteImport.update({
   id: '/api/admin/license/unrevoke',
@@ -206,6 +224,8 @@ export interface FileRoutesByFullPath {
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
   '/app/support': typeof AuthAppSupportRoute
+  '/api/ai/models': typeof ApiAiModelsRoute
+  '/api/ai/quota': typeof ApiAiQuotaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
   '/api/license/check': typeof ApiLicenseCheckRoute
@@ -218,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -235,6 +256,8 @@ export interface FileRoutesByTo {
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
   '/app/support': typeof AuthAppSupportRoute
+  '/api/ai/models': typeof ApiAiModelsRoute
+  '/api/ai/quota': typeof ApiAiQuotaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
   '/api/license/check': typeof ApiLicenseCheckRoute
@@ -247,6 +270,7 @@ export interface FileRoutesByTo {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -268,6 +292,8 @@ export interface FileRoutesById {
   '/_auth/app/billing': typeof AuthAppBillingRoute
   '/_auth/app/downloads': typeof AuthAppDownloadsRoute
   '/_auth/app/support': typeof AuthAppSupportRoute
+  '/api/ai/models': typeof ApiAiModelsRoute
+  '/api/ai/quota': typeof ApiAiQuotaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/license/activate': typeof ApiLicenseActivateRoute
   '/api/license/check': typeof ApiLicenseCheckRoute
@@ -280,6 +306,7 @@ export interface FileRoutesById {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -300,6 +327,8 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/downloads'
     | '/app/support'
+    | '/api/ai/models'
+    | '/api/ai/quota'
     | '/api/auth/$'
     | '/api/license/activate'
     | '/api/license/check'
@@ -312,6 +341,7 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/ai/chat/completions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -329,6 +359,8 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/downloads'
     | '/app/support'
+    | '/api/ai/models'
+    | '/api/ai/quota'
     | '/api/auth/$'
     | '/api/license/activate'
     | '/api/license/check'
@@ -341,6 +373,7 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/ai/chat/completions'
   id:
     | '__root__'
     | '/'
@@ -361,6 +394,8 @@ export interface FileRouteTypes {
     | '/_auth/app/billing'
     | '/_auth/app/downloads'
     | '/_auth/app/support'
+    | '/api/ai/models'
+    | '/api/ai/quota'
     | '/api/auth/$'
     | '/api/license/activate'
     | '/api/license/check'
@@ -373,6 +408,7 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/ai/chat/completions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -388,6 +424,8 @@ export interface RootRouteChildren {
   ApiChangelogRoute: typeof ApiChangelogRoute
   ApiReleasesRoute: typeof ApiReleasesRoute
   IngestSplatRoute: typeof IngestSplatRoute
+  ApiAiModelsRoute: typeof ApiAiModelsRoute
+  ApiAiQuotaRoute: typeof ApiAiQuotaRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiLicenseActivateRoute: typeof ApiLicenseActivateRoute
   ApiLicenseCheckRoute: typeof ApiLicenseCheckRoute
@@ -399,6 +437,7 @@ export interface RootRouteChildren {
   ApiAdminLicenseInfoRoute: typeof ApiAdminLicenseInfoRoute
   ApiAdminLicenseRevokeRoute: typeof ApiAdminLicenseRevokeRoute
   ApiAdminLicenseUnrevokeRoute: typeof ApiAdminLicenseUnrevokeRoute
+  ApiAiChatCompletionsRoute: typeof ApiAiChatCompletionsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -571,6 +610,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/quota': {
+      id: '/api/ai/quota'
+      path: '/api/ai/quota'
+      fullPath: '/api/ai/quota'
+      preLoaderRoute: typeof ApiAiQuotaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/models': {
+      id: '/api/ai/models'
+      path: '/api/ai/models'
+      fullPath: '/api/ai/models'
+      preLoaderRoute: typeof ApiAiModelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_auth/app/support': {
       id: '/_auth/app/support'
       path: '/support'
@@ -591,6 +644,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/billing'
       preLoaderRoute: typeof AuthAppBillingRouteImport
       parentRoute: typeof AuthAppRouteRoute
+    }
+    '/api/ai/chat/completions': {
+      id: '/api/ai/chat/completions'
+      path: '/api/ai/chat/completions'
+      fullPath: '/api/ai/chat/completions'
+      preLoaderRoute: typeof ApiAiChatCompletionsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/admin/license/unrevoke': {
       id: '/api/admin/license/unrevoke'
@@ -673,6 +733,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChangelogRoute: ApiChangelogRoute,
   ApiReleasesRoute: ApiReleasesRoute,
   IngestSplatRoute: IngestSplatRoute,
+  ApiAiModelsRoute: ApiAiModelsRoute,
+  ApiAiQuotaRoute: ApiAiQuotaRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiLicenseActivateRoute: ApiLicenseActivateRoute,
   ApiLicenseCheckRoute: ApiLicenseCheckRoute,
@@ -684,6 +746,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminLicenseInfoRoute: ApiAdminLicenseInfoRoute,
   ApiAdminLicenseRevokeRoute: ApiAdminLicenseRevokeRoute,
   ApiAdminLicenseUnrevokeRoute: ApiAdminLicenseUnrevokeRoute,
+  ApiAiChatCompletionsRoute: ApiAiChatCompletionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

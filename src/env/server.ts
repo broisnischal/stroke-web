@@ -32,6 +32,10 @@ export const env = createEnv({
     // limit from 60 to 5000 requests/hour; no scopes needed for public repos)
     GITHUB_TOKEN: z.string().optional(),
 
+    // Free AI tier overflow. Optional: without it the free tier returns a typed
+    // 429 once the Workers AI daily cap trips, instead of falling back.
+    OPENROUTER_POOL_KEY: z.string().optional(),
+
     // Dodo Payments
     DODO_PAYMENTS_API_KEY: z.string().min(1),
     DODO_WEBHOOK_KEY: z.string().min(1),
