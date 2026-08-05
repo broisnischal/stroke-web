@@ -119,7 +119,7 @@ function DownloadsPage() {
               ? "Fetching latest release…"
               : release
                 ? `Latest: ${release.tag_name} · ${new Date(release.published_at).toLocaleDateString("en-CA")}`
-                : "Stroke Desktop — macOS, Windows, Linux"}
+                : "Stroke Desktop for macOS, Windows, and Linux"}
           </p>
         </div>
         {release && (

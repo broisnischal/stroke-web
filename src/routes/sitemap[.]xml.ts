@@ -5,6 +5,9 @@ import { SITE_URL } from "#/lib/seo";
 /** Public, indexable pages. Add new marketing pages here. */
 const PAGES: { path: string; priority: string; changefreq: string }[] = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
+  { path: "/features", priority: "0.8", changefreq: "monthly" },
+  { path: "/docs", priority: "0.8", changefreq: "monthly" },
+  { path: "/docs/mcp", priority: "0.7", changefreq: "monthly" },
   { path: "/download", priority: "0.9", changefreq: "weekly" },
   { path: "/changelog", priority: "0.7", changefreq: "weekly" },
   { path: "/roadmap", priority: "0.7", changefreq: "monthly" },

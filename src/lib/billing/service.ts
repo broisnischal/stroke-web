@@ -4,9 +4,41 @@ import { and, eq, isNull } from "drizzle-orm";
 import { db } from "#/lib/db";
 import { enterpriseDomains, licenses, payments, subscriptions, user } from "#/lib/db/schema";
 import { getOrIssueLicense } from "#/lib/license";
+import { sendPaymentFailedEmail, sendPurchaseSuccessEmail } from "#/lib/mail";
 
 import { domainFromEmail, getEnterpriseDomain, isPublicEmailDomain, TEAM_PLAN } from "./enterprise";
 import type { BillingEvent } from "./providers/types";
+
+/**
+ * Fire a "purchase confirmed" email. Best-effort: any failure is logged and
+ * swallowed so a mail problem never breaks webhook processing.
+ */
+async function notifyPurchaseSuccess(args: {
+  userId: string;
+  email: string;
+  planLabel: string;
+  amount?: number;
+  currency?: string;
+  licenseKey?: string;
+}): Promise<void> {
+  try {
+    const rows = await db
+      .select({ name: user.name })
+      .from(user)
+      .where(eq(user.id, args.userId))
+      .limit(1);
+    await sendPurchaseSuccessEmail({
+      to: args.email,
+      name: rows[0]?.name ?? args.email,
+      planLabel: args.planLabel,
+      amount: args.amount,
+      currency: args.currency,
+      licenseKey: args.licenseKey,
+    });
+  } catch (err) {
+    console.error("[billing] purchase-success email failed:", err);
+  }
+}
 
 /**
  * Apply a completed Team purchase. Idempotent: safe to call for the first
@@ -20,7 +52,7 @@ async function grantTeamPurchase(args: {
   customerId?: string;
   amount?: number;
   currency?: string;
-}): Promise<void> {
+}): Promise<{ licenseKey: string; firstPayment: boolean }> {
   const { userId, email, paymentId, customerId, amount, currency } = args;
   const domain = domainFromEmail(email);
 
@@ -87,7 +119,8 @@ async function grantTeamPurchase(args: {
     .where(eq(payments.providerPaymentId, paymentId))
     .limit(1);
 
-  if (existingPayment.length === 0) {
+  const firstPayment = existingPayment.length === 0;
+  if (firstPayment) {
     await db.insert(payments).values({
       id: crypto.randomUUID(),
       userId,
@@ -100,7 +133,8 @@ async function grantTeamPurchase(args: {
     });
   }
 
-  await getOrIssueLicense(userId, email, { plan: TEAM_PLAN });
+  const license = await getOrIssueLicense(userId, email, { plan: TEAM_PLAN });
+  return { licenseKey: license.licenseKey, firstPayment };
 }
 
 export async function getActiveSubscription(userId: string) {
@@ -122,7 +156,7 @@ export async function getSubscription(userId: string) {
 }
 
 /**
- * True when the user already owns Stroke — an active subscription record or a
+ * True when the user already owns Stroke: an active subscription record or a
  * non-revoked license. Used to block a second purchase before checkout.
  */
 export async function userHasActiveLicense(userId: string): Promise<boolean> {
@@ -266,7 +300,7 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
       // Team purchase: mark the buyer's domain as covered. grantTeamPurchase is
       // fully idempotent, so it also handles retries and the recover flow.
       if (data.plan === TEAM_PLAN) {
-        await grantTeamPurchase({
+        const { licenseKey, firstPayment } = await grantTeamPurchase({
           userId: resolvedUserId,
           email: resolvedEmail,
           paymentId: data.paymentId,
@@ -274,6 +308,16 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
           amount: data.amount,
           currency: data.currency,
         });
+        if (firstPayment) {
+          await notifyPurchaseSuccess({
+            userId: resolvedUserId,
+            email: resolvedEmail,
+            planLabel: "Stroke Team",
+            amount: data.amount,
+            currency: data.currency,
+            licenseKey,
+          });
+        }
         return;
       }
 
@@ -307,7 +351,7 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
         return;
       }
 
-      // Upsert a lifetime subscription — this is the primary event that grants Pro access.
+      // Upsert a lifetime subscription. This is the primary event that grants Pro access.
       const existingSub = await db
         .select({ id: subscriptions.id })
         .from(subscriptions)
@@ -347,7 +391,65 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
         status: "succeeded",
       });
 
-      await getOrIssueLicense(resolvedUserId, resolvedEmail);
+      const license = await getOrIssueLicense(resolvedUserId, resolvedEmail);
+
+      // First successful payment for this user, so confirm the purchase by email.
+      await notifyPurchaseSuccess({
+        userId: resolvedUserId,
+        email: resolvedEmail,
+        planLabel: "Stroke Pro",
+        amount: data.amount,
+        currency: data.currency,
+        licenseKey: license.licenseKey,
+      });
+      break;
+    }
+
+    case "payment.failed": {
+      // A failed attempt makes no DB changes; we just notify the user so they
+      // can retry. Resolve their address from metadata userId, then email.
+      let email = data.email;
+      let name: string | undefined;
+
+      if (data.userId) {
+        const rows = await db
+          .select({ email: user.email, name: user.name })
+          .from(user)
+          .where(eq(user.id, data.userId))
+          .limit(1);
+        if (rows.length > 0) {
+          email = rows[0].email;
+          name = rows[0].name;
+        }
+      }
+
+      if (!name && email) {
+        const rows = await db
+          .select({ name: user.name })
+          .from(user)
+          .where(eq(user.email, email))
+          .limit(1);
+        if (rows.length > 0) name = rows[0].name;
+      }
+
+      if (!email) {
+        console.warn(
+          "[billing] payment.failed: cannot resolve email, skipping notification. paymentId:",
+          data.paymentId,
+        );
+        break;
+      }
+
+      try {
+        await sendPaymentFailedEmail({
+          to: email,
+          name: name ?? email,
+          amount: data.amount,
+          currency: data.currency,
+        });
+      } catch (err) {
+        console.error("[billing] payment-failed email failed:", err);
+      }
       break;
     }
 
@@ -359,7 +461,7 @@ export async function handleBillingEvent(event: BillingEvent): Promise<void> {
         .where(eq(payments.providerPaymentId, data.paymentId));
 
       // If this payment backed a Team domain, stop covering new members.
-      // Already-issued member licenses are left intact — revoke them via the
+      // Already-issued member licenses are left intact; revoke them via the
       // admin endpoint if a refund should fully cut off access.
       await db
         .update(enterpriseDomains)

@@ -7,7 +7,7 @@ import { seo } from "#/lib/seo";
 export const Route = createFileRoute("/terms")({
   head: () =>
     seo({
-      title: "Terms of Service — Stroke",
+      title: "Terms of Service · Stroke",
       description:
         "The terms that govern your use of the Stroke desktop application, the stroke.click website, and Stroke licenses.",
       path: "/terms",
@@ -49,8 +49,8 @@ function TermsPage() {
         <p>
           An account is only needed to purchase and manage a license. You can sign in with GitHub or
           Google. You are responsible for activity that happens under your account, and you agree to
-          give us accurate information. We may suspend accounts that abuse the service — for
-          example, attempts to defraud the licensing system or attack the website.
+          give us accurate information. We may suspend accounts that abuse the service, for example
+          by attempting to defraud the licensing system or attack the website.
         </p>
       </LegalSection>
 
@@ -62,7 +62,7 @@ function TermsPage() {
         <LegalList
           items={[
             <>
-              You <strong>own your license permanently</strong>. It is not a subscription — it never
+              You <strong>own your license permanently</strong>. It is not a subscription. It never
               renews, never expires, and includes every future update of the app.
             </>,
             <>
@@ -71,7 +71,7 @@ function TermsPage() {
               device from your dashboard to free a seat.
             </>,
             <>
-              The license is personal to you. Don't publish, resell, or share your key — we may
+              The license is personal to you. Don't publish, resell, or share your key. We may
               revoke keys that are leaked or abused.
             </>,
           ]}
@@ -85,9 +85,9 @@ function TermsPage() {
           in USD unless stated otherwise.
         </p>
         <p>
-          A license is a single payment — there are no recurring charges to cancel. If something
-          went wrong — a duplicate charge, a mistake at checkout, or a license that doesn't activate
-          — contact us within 14 days and we will make it right.
+          A license is a single payment, so there are no recurring charges to cancel. If something
+          went wrong (a duplicate charge, a mistake at checkout, or a license that doesn't
+          activate), contact us within 14 days and we will make it right.
         </p>
       </LegalSection>
 
@@ -115,7 +115,7 @@ function TermsPage() {
           The software and the service are provided <strong>"as is"</strong> and{" "}
           <strong>"as available"</strong>, without warranties of any kind, express or implied,
           including merchantability, fitness for a particular purpose, and non-infringement. Stroke
-          is a tool that operates on your databases at your direction — you are responsible for your
+          is a tool that operates on your databases at your direction. You are responsible for your
           own backups and for the queries you run.
         </p>
       </LegalSection>

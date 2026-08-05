@@ -1,7 +1,7 @@
 import { cn } from "#/lib/utils";
 
 /**
- * The Stroke desktop app in the hero — a real screenshot inside a framed
+ * The Stroke desktop app in the hero, a real screenshot inside a framed
  * card with a warm ambient glow.
  */
 export function AppWindow({ className }: { className?: string }) {
@@ -21,7 +21,7 @@ export function AppWindow({ className }: { className?: string }) {
             width={2208}
             height={1371}
             loading="eager"
-            alt="The Stroke app connected to a Postgres database — table sidebar with row counts, bulk table actions, and quick access to SQL, dashboards, AI, schema, diagrams, and the MCP server"
+            alt="The Stroke app connected to a Postgres database, showing a table sidebar with row counts, bulk table actions, and quick access to SQL, dashboards, AI, schema, diagrams, and the MCP server"
             className="block w-full"
           />
         </div>
@@ -31,7 +31,7 @@ export function AppWindow({ className }: { className?: string }) {
 }
 
 /**
- * A YouTube demo of the Stroke app, framed to match {@link AppWindow} — the
+ * A YouTube demo of the Stroke app, framed to match {@link AppWindow}, the
  * same warm glow and hairline frame, wrapping a 16:9 embed.
  */
 export function VideoDemo({

@@ -13,14 +13,18 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DownloadRouteImport } from './routes/download'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as GuestRouteRouteImport } from './routes/_guest/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as IngestSplatRouteImport } from './routes/ingest/$'
+import { Route as DocsMcpRouteImport } from './routes/docs/mcp'
 import { Route as ApiReleasesRouteImport } from './routes/api/releases'
 import { Route as ApiChangelogRouteImport } from './routes/api/changelog'
+import { Route as AdminReviewsRouteImport } from './routes/admin/reviews'
 import { Route as GuestSignupRouteImport } from './routes/_guest/signup'
 import { Route as GuestLoginRouteImport } from './routes/_guest/login'
 import { Route as AuthAppRouteRouteImport } from './routes/_auth/app/route'
@@ -36,9 +40,12 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAiQuotaRouteImport } from './routes/api/ai/quota'
 import { Route as ApiAiModelsRouteImport } from './routes/api/ai/models'
 import { Route as AuthAppSupportRouteImport } from './routes/_auth/app/support'
+import { Route as AuthAppReviewsRouteImport } from './routes/_auth/app/reviews'
 import { Route as AuthAppDownloadsRouteImport } from './routes/_auth/app/downloads'
 import { Route as AuthAppBillingRouteImport } from './routes/_auth/app/billing'
 import { Route as ApiAiChatCompletionsRouteImport } from './routes/api/ai/chat/completions'
+import { Route as ApiAdminReviewsModerateRouteImport } from './routes/api/admin/reviews/moderate'
+import { Route as ApiAdminReviewsListRouteImport } from './routes/api/admin/reviews/list'
 import { Route as ApiAdminLicenseUnrevokeRouteImport } from './routes/api/admin/license/unrevoke'
 import { Route as ApiAdminLicenseRevokeRouteImport } from './routes/api/admin/license/revoke'
 import { Route as ApiAdminLicenseInfoRouteImport } from './routes/api/admin/license/info'
@@ -61,6 +68,11 @@ const RoadmapRoute = RoadmapRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DownloadRoute = DownloadRouteImport.update({
@@ -86,9 +98,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IngestSplatRoute = IngestSplatRouteImport.update({
   id: '/ingest/$',
   path: '/ingest/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsMcpRoute = DocsMcpRouteImport.update({
+  id: '/docs/mcp',
+  path: '/docs/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiReleasesRoute = ApiReleasesRouteImport.update({
@@ -99,6 +121,11 @@ const ApiReleasesRoute = ApiReleasesRouteImport.update({
 const ApiChangelogRoute = ApiChangelogRouteImport.update({
   id: '/api/changelog',
   path: '/api/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuestSignupRoute = GuestSignupRouteImport.update({
@@ -176,6 +203,11 @@ const AuthAppSupportRoute = AuthAppSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => AuthAppRouteRoute,
 } as any)
+const AuthAppReviewsRoute = AuthAppReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AuthAppRouteRoute,
+} as any)
 const AuthAppDownloadsRoute = AuthAppDownloadsRouteImport.update({
   id: '/downloads',
   path: '/downloads',
@@ -189,6 +221,16 @@ const AuthAppBillingRoute = AuthAppBillingRouteImport.update({
 const ApiAiChatCompletionsRoute = ApiAiChatCompletionsRouteImport.update({
   id: '/api/ai/chat/completions',
   path: '/api/ai/chat/completions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminReviewsModerateRoute = ApiAdminReviewsModerateRouteImport.update({
+  id: '/api/admin/reviews/moderate',
+  path: '/api/admin/reviews/moderate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminReviewsListRoute = ApiAdminReviewsListRouteImport.update({
+  id: '/api/admin/reviews/list',
+  path: '/api/admin/reviews/list',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminLicenseUnrevokeRoute = ApiAdminLicenseUnrevokeRouteImport.update({
@@ -211,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
   '/download': typeof DownloadRoute
+  '/features': typeof FeaturesRoute
   '/privacy': typeof PrivacyRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -218,11 +261,15 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthAppRouteRouteWithChildren
   '/login': typeof GuestLoginRoute
   '/signup': typeof GuestSignupRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/docs/mcp': typeof DocsMcpRoute
   '/ingest/$': typeof IngestSplatRoute
+  '/docs/': typeof DocsIndexRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
+  '/app/reviews': typeof AuthAppReviewsRoute
   '/app/support': typeof AuthAppSupportRoute
   '/api/ai/models': typeof ApiAiModelsRoute
   '/api/ai/quota': typeof ApiAiQuotaRoute
@@ -238,23 +285,30 @@ export interface FileRoutesByFullPath {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
+  '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
   '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
   '/download': typeof DownloadRoute
+  '/features': typeof FeaturesRoute
   '/privacy': typeof PrivacyRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/login': typeof GuestLoginRoute
   '/signup': typeof GuestSignupRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/docs/mcp': typeof DocsMcpRoute
   '/ingest/$': typeof IngestSplatRoute
+  '/docs': typeof DocsIndexRoute
   '/app/billing': typeof AuthAppBillingRoute
   '/app/downloads': typeof AuthAppDownloadsRoute
+  '/app/reviews': typeof AuthAppReviewsRoute
   '/app/support': typeof AuthAppSupportRoute
   '/api/ai/models': typeof ApiAiModelsRoute
   '/api/ai/quota': typeof ApiAiQuotaRoute
@@ -270,6 +324,8 @@ export interface FileRoutesByTo {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
+  '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
   '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRoutesById {
@@ -279,6 +335,7 @@ export interface FileRoutesById {
   '/_guest': typeof GuestRouteRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/download': typeof DownloadRoute
+  '/features': typeof FeaturesRoute
   '/privacy': typeof PrivacyRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -286,11 +343,15 @@ export interface FileRoutesById {
   '/_auth/app': typeof AuthAppRouteRouteWithChildren
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/signup': typeof GuestSignupRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/docs/mcp': typeof DocsMcpRoute
   '/ingest/$': typeof IngestSplatRoute
+  '/docs/': typeof DocsIndexRoute
   '/_auth/app/billing': typeof AuthAppBillingRoute
   '/_auth/app/downloads': typeof AuthAppDownloadsRoute
+  '/_auth/app/reviews': typeof AuthAppReviewsRoute
   '/_auth/app/support': typeof AuthAppSupportRoute
   '/api/ai/models': typeof ApiAiModelsRoute
   '/api/ai/quota': typeof ApiAiQuotaRoute
@@ -306,6 +367,8 @@ export interface FileRoutesById {
   '/api/admin/license/info': typeof ApiAdminLicenseInfoRoute
   '/api/admin/license/revoke': typeof ApiAdminLicenseRevokeRoute
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
+  '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
+  '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
   '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRouteTypes {
@@ -314,6 +377,7 @@ export interface FileRouteTypes {
     | '/'
     | '/changelog'
     | '/download'
+    | '/features'
     | '/privacy'
     | '/roadmap'
     | '/sitemap.xml'
@@ -321,11 +385,15 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/signup'
+    | '/admin/reviews'
     | '/api/changelog'
     | '/api/releases'
+    | '/docs/mcp'
     | '/ingest/$'
+    | '/docs/'
     | '/app/billing'
     | '/app/downloads'
+    | '/app/reviews'
     | '/app/support'
     | '/api/ai/models'
     | '/api/ai/quota'
@@ -341,23 +409,30 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/admin/reviews/list'
+    | '/api/admin/reviews/moderate'
     | '/api/ai/chat/completions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/changelog'
     | '/download'
+    | '/features'
     | '/privacy'
     | '/roadmap'
     | '/sitemap.xml'
     | '/terms'
     | '/login'
     | '/signup'
+    | '/admin/reviews'
     | '/api/changelog'
     | '/api/releases'
+    | '/docs/mcp'
     | '/ingest/$'
+    | '/docs'
     | '/app/billing'
     | '/app/downloads'
+    | '/app/reviews'
     | '/app/support'
     | '/api/ai/models'
     | '/api/ai/quota'
@@ -373,6 +448,8 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/admin/reviews/list'
+    | '/api/admin/reviews/moderate'
     | '/api/ai/chat/completions'
   id:
     | '__root__'
@@ -381,6 +458,7 @@ export interface FileRouteTypes {
     | '/_guest'
     | '/changelog'
     | '/download'
+    | '/features'
     | '/privacy'
     | '/roadmap'
     | '/sitemap.xml'
@@ -388,11 +466,15 @@ export interface FileRouteTypes {
     | '/_auth/app'
     | '/_guest/login'
     | '/_guest/signup'
+    | '/admin/reviews'
     | '/api/changelog'
     | '/api/releases'
+    | '/docs/mcp'
     | '/ingest/$'
+    | '/docs/'
     | '/_auth/app/billing'
     | '/_auth/app/downloads'
+    | '/_auth/app/reviews'
     | '/_auth/app/support'
     | '/api/ai/models'
     | '/api/ai/quota'
@@ -408,6 +490,8 @@ export interface FileRouteTypes {
     | '/api/admin/license/info'
     | '/api/admin/license/revoke'
     | '/api/admin/license/unrevoke'
+    | '/api/admin/reviews/list'
+    | '/api/admin/reviews/moderate'
     | '/api/ai/chat/completions'
   fileRoutesById: FileRoutesById
 }
@@ -417,13 +501,17 @@ export interface RootRouteChildren {
   GuestRouteRoute: typeof GuestRouteRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
   DownloadRoute: typeof DownloadRoute
+  FeaturesRoute: typeof FeaturesRoute
   PrivacyRoute: typeof PrivacyRoute
   RoadmapRoute: typeof RoadmapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   ApiChangelogRoute: typeof ApiChangelogRoute
   ApiReleasesRoute: typeof ApiReleasesRoute
+  DocsMcpRoute: typeof DocsMcpRoute
   IngestSplatRoute: typeof IngestSplatRoute
+  DocsIndexRoute: typeof DocsIndexRoute
   ApiAiModelsRoute: typeof ApiAiModelsRoute
   ApiAiQuotaRoute: typeof ApiAiQuotaRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -437,6 +525,8 @@ export interface RootRouteChildren {
   ApiAdminLicenseInfoRoute: typeof ApiAdminLicenseInfoRoute
   ApiAdminLicenseRevokeRoute: typeof ApiAdminLicenseRevokeRoute
   ApiAdminLicenseUnrevokeRoute: typeof ApiAdminLicenseUnrevokeRoute
+  ApiAdminReviewsListRoute: typeof ApiAdminReviewsListRoute
+  ApiAdminReviewsModerateRoute: typeof ApiAdminReviewsModerateRoute
   ApiAiChatCompletionsRoute: typeof ApiAiChatCompletionsRoute
 }
 
@@ -468,6 +558,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/download': {
@@ -505,11 +602,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ingest/$': {
       id: '/ingest/$'
       path: '/ingest/$'
       fullPath: '/ingest/$'
       preLoaderRoute: typeof IngestSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp': {
+      id: '/docs/mcp'
+      path: '/docs/mcp'
+      fullPath: '/docs/mcp'
+      preLoaderRoute: typeof DocsMcpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/releases': {
@@ -524,6 +635,13 @@ declare module '@tanstack/react-router' {
       path: '/api/changelog'
       fullPath: '/api/changelog'
       preLoaderRoute: typeof ApiChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_guest/signup': {
@@ -631,6 +749,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAppSupportRouteImport
       parentRoute: typeof AuthAppRouteRoute
     }
+    '/_auth/app/reviews': {
+      id: '/_auth/app/reviews'
+      path: '/reviews'
+      fullPath: '/app/reviews'
+      preLoaderRoute: typeof AuthAppReviewsRouteImport
+      parentRoute: typeof AuthAppRouteRoute
+    }
     '/_auth/app/downloads': {
       id: '/_auth/app/downloads'
       path: '/downloads'
@@ -650,6 +775,20 @@ declare module '@tanstack/react-router' {
       path: '/api/ai/chat/completions'
       fullPath: '/api/ai/chat/completions'
       preLoaderRoute: typeof ApiAiChatCompletionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/reviews/moderate': {
+      id: '/api/admin/reviews/moderate'
+      path: '/api/admin/reviews/moderate'
+      fullPath: '/api/admin/reviews/moderate'
+      preLoaderRoute: typeof ApiAdminReviewsModerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/reviews/list': {
+      id: '/api/admin/reviews/list'
+      path: '/api/admin/reviews/list'
+      fullPath: '/api/admin/reviews/list'
+      preLoaderRoute: typeof ApiAdminReviewsListRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/license/unrevoke': {
@@ -679,6 +818,7 @@ declare module '@tanstack/react-router' {
 interface AuthAppRouteRouteChildren {
   AuthAppBillingRoute: typeof AuthAppBillingRoute
   AuthAppDownloadsRoute: typeof AuthAppDownloadsRoute
+  AuthAppReviewsRoute: typeof AuthAppReviewsRoute
   AuthAppSupportRoute: typeof AuthAppSupportRoute
   AuthAppIndexRoute: typeof AuthAppIndexRoute
 }
@@ -686,6 +826,7 @@ interface AuthAppRouteRouteChildren {
 const AuthAppRouteRouteChildren: AuthAppRouteRouteChildren = {
   AuthAppBillingRoute: AuthAppBillingRoute,
   AuthAppDownloadsRoute: AuthAppDownloadsRoute,
+  AuthAppReviewsRoute: AuthAppReviewsRoute,
   AuthAppSupportRoute: AuthAppSupportRoute,
   AuthAppIndexRoute: AuthAppIndexRoute,
 }
@@ -726,13 +867,17 @@ const rootRouteChildren: RootRouteChildren = {
   GuestRouteRoute: GuestRouteRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
   DownloadRoute: DownloadRoute,
+  FeaturesRoute: FeaturesRoute,
   PrivacyRoute: PrivacyRoute,
   RoadmapRoute: RoadmapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   ApiChangelogRoute: ApiChangelogRoute,
   ApiReleasesRoute: ApiReleasesRoute,
+  DocsMcpRoute: DocsMcpRoute,
   IngestSplatRoute: IngestSplatRoute,
+  DocsIndexRoute: DocsIndexRoute,
   ApiAiModelsRoute: ApiAiModelsRoute,
   ApiAiQuotaRoute: ApiAiQuotaRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
@@ -746,6 +891,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminLicenseInfoRoute: ApiAdminLicenseInfoRoute,
   ApiAdminLicenseRevokeRoute: ApiAdminLicenseRevokeRoute,
   ApiAdminLicenseUnrevokeRoute: ApiAdminLicenseUnrevokeRoute,
+  ApiAdminReviewsListRoute: ApiAdminReviewsListRoute,
+  ApiAdminReviewsModerateRoute: ApiAdminReviewsModerateRoute,
   ApiAiChatCompletionsRoute: ApiAiChatCompletionsRoute,
 }
 export const routeTree = rootRouteImport

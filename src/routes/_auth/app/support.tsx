@@ -36,11 +36,11 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "I paid but didn't receive a license key.",
-    a: "Go to Dashboard — your key is generated as soon as the payment clears (usually within seconds). If it's still missing after 5 minutes, use the Refresh button on the billing confirmation page or email us.",
+    a: "Go to Dashboard. Your key is generated as soon as the payment clears, usually within seconds. If it's still missing after 5 minutes, use the Refresh button on the billing confirmation page or email us.",
   },
   {
     q: "Is there a refund policy?",
-    a: "Yes. If Stroke doesn't work as described on your platform within 14 days of purchase, we'll issue a full refund — no questions asked.",
+    a: "Yes. If Stroke doesn't work as described on your platform within 14 days of purchase, we'll issue a full refund, no questions asked.",
   },
 ];
 

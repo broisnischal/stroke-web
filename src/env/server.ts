@@ -17,7 +17,7 @@ export const env = createEnv({
     // Admin API secret for license management
     LICENSE_ADMIN_SECRET: z.string().min(32),
 
-    // Stroke desktop OAuth proxy — confidential provider client secrets.
+    // Stroke desktop OAuth proxy: confidential provider client secrets.
     // Set via `wrangler secret put <NAME>`. Optional so the app boots without
     // every provider configured. (Used by src/routes/api/oauth/token.ts.)
     SUPABASE_CLIENT_SECRET: z.string().optional(),
@@ -27,6 +27,14 @@ export const env = createEnv({
 
     // PostHog personal API key (server-side API / feature-flag local eval), optional
     POSTHOG_PERSONAL_API_KEY: z.string().optional(),
+
+    // Plunk (useplunk.com) transactional email. PLUNK_API_KEY is the SECRET
+    // key (sk_...); set it via `wrangler secret put PLUNK_API_KEY`. Optional.
+    // when unset, emails are skipped (logged) so billing never fails on mail.
+    PLUNK_API_KEY: z.string().optional(),
+    // Verified sender address for outgoing mail. The domain must be verified
+    // in Plunk (see https://docs.useplunk.com/guides/verifying-domains).
+    PLUNK_FROM_EMAIL: z.email().default("noreply@stroke.click"),
 
     // GitHub API token for release listings, optional (raises the rate
     // limit from 60 to 5000 requests/hour; no scopes needed for public repos)
@@ -40,7 +48,7 @@ export const env = createEnv({
     DODO_PAYMENTS_API_KEY: z.string().min(1),
     DODO_WEBHOOK_KEY: z.string().min(1),
     DODO_PRODUCT_ID: z.string().min(1),
-    // Team/Enterprise product ($99, covers a whole email domain). Optional —
+    // Team/Enterprise product ($99, covers a whole email domain). Optional.
     // the Team plan is only offered when this is set.
     DODO_TEAM_PRODUCT_ID: z.string().optional(),
     DODO_ENVIRONMENT: z.enum(["live_mode", "test_mode"]).default("test_mode"),

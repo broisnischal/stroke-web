@@ -28,6 +28,9 @@ DODO_ENVIRONMENT = "live_mode"
 # OPENROUTER_POOL_KEY (optional) — free-tier overflow once the Workers AI daily cap
 #   trips. Without it, the free tier simply 429s instead of falling back.
 # GITHUB_TOKEN (optional) — raises the GitHub API rate limit for /api/releases
+# PLUNK_API_KEY (optional) — Plunk SECRET key (sk_...) for transactional email;
+#   when unset, purchase/failure emails are skipped. Sender: PLUNK_FROM_EMAIL
+#   (defaults to noreply@stroke.click; the domain must be verified in Plunk)
 
 [assets]
 directory = "./public"

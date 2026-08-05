@@ -1,9 +1,11 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { StrokeIcon } from "#/components/stroke-icon";
 import { ThemeToggle } from "#/components/theme-toggle";
 import { Button } from "#/components/ui/button";
 import { useAuth } from "#/lib/auth/hooks";
+import { changelogQueryOptions } from "#/lib/changelog";
 import { cn } from "#/lib/utils";
 
 export const REPO_URL = "https://github.com/broisnischal/stroke";
@@ -40,7 +42,8 @@ export function BrushStroke({
 }
 
 const NAV_LINKS = [
-  { label: "Features", href: "/#features" },
+  { label: "Features", href: "/features" },
+  { label: "Docs", href: "/docs" },
   { label: "Pricing", href: "/#pricing" },
   { label: "Roadmap", href: "/roadmap" },
   { label: "Changelog", href: "/changelog" },
@@ -49,6 +52,12 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Warm the changelog cache on hover/focus so the page opens instantly.
+  const prefetchChangelog = () => {
+    void queryClient.prefetchQuery(changelogQueryOptions());
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/90 backdrop-blur-sm">
@@ -60,15 +69,20 @@ export function SiteHeader() {
           </Link>
 
           <nav className="hidden items-center gap-5 sm:flex" aria-label="Main">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const prefetch = link.href === "/changelog" ? prefetchChangelog : undefined;
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onMouseEnter={prefetch}
+                  onFocus={prefetch}
+                  className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </nav>
         </div>
 
@@ -101,7 +115,7 @@ export function SiteFooter() {
             </span>
             <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
               A fast, native database studio for PostgreSQL, MySQL, ClickHouse, DuckDB, and more.
-              Built in Rust.
+              Built in Rust and Tauri, for agents and humans.
             </p>
             <BrushStroke className="mt-4 h-1.5 w-16" />
           </div>
@@ -110,6 +124,16 @@ export function SiteFooter() {
             <div>
               <p className="text-xs font-medium tracking-wide text-foreground">Product</p>
               <ul className="mt-3 space-y-2 text-[13px] text-muted-foreground">
+                <li>
+                  <Link to="/features" className="transition-colors hover:text-foreground">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/docs" className="transition-colors hover:text-foreground">
+                    Docs
+                  </Link>
+                </li>
                 <li>
                   <a href="/#pricing" className="transition-colors hover:text-foreground">
                     Pricing

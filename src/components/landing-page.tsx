@@ -3,13 +3,14 @@ import {
   SiCloudflare,
   SiCockroachlabs,
   SiDuckdb,
-  SiGooglebigquery,
   SiMariadb,
   SiMysql,
   SiPostgresql,
+  SiRedis,
   SiSqlite,
   SiTurso,
 } from "@icons-pack/react-simple-icons";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   BotIcon,
@@ -30,6 +31,7 @@ import { SmartDownloadButton } from "#/components/download-button";
 import { BrushStroke, SiteFooter, SiteHeader } from "#/components/site-chrome";
 import { buttonVariants } from "#/components/ui/button";
 import { useAuth } from "#/lib/auth/hooks";
+import { approvedReviewsQueryOptions } from "#/lib/reviews/functions";
 import { cn } from "#/lib/utils";
 
 export function LandingPage() {
@@ -42,6 +44,7 @@ export function LandingPage() {
         <Pillars />
         <Databases />
         <Features />
+        <Reviews />
         <Pricing />
         <Faq />
         <ClosingCta />
@@ -56,42 +59,57 @@ function Hero() {
     <section className="border-b border-border/40">
       <div className="mx-auto max-w-4xl px-6 py-16 md:py-24">
         <div className="max-w-2xl">
-          <p className="flex items-center gap-2 font-mono text-xs tracking-widest text-muted-foreground uppercase">
+          <p className="animate-fade-up flex items-center gap-2 font-mono text-xs tracking-widest text-muted-foreground uppercase">
             <span className="inline-block h-px w-6 bg-copper" aria-hidden="true" />
-            Native app · Built in Rust
+            Native app · Rust + Tauri
           </p>
 
-          <h1 className="mt-6 text-[2.1rem] leading-[1.08] font-semibold tracking-[-0.035em] text-balance min-[430px]:text-[2.6rem] sm:text-6xl">
-            One studio for{" "}
+          <h1
+            className="animate-fade-up mt-6 text-[1.9rem] leading-[1.05] font-semibold tracking-[-0.03em] text-balance min-[430px]:text-[2.5rem] sm:text-6xl"
+            style={{ animationDelay: "80ms" }}
+          >
+            The database studio for{" "}
             <span className="relative inline-block whitespace-nowrap">
-              every database
+              agents and humans
               <BrushStroke
                 animate
                 className="absolute -bottom-2 left-0 h-2.5 w-full sm:-bottom-3"
               />
-            </span>{" "}
-            you run.
+            </span>
+            .
           </h1>
 
-          <p className="mt-7 max-w-xl text-[15px] leading-[1.7] text-muted-foreground">
+          <p
+            className="animate-fade-up mt-7 max-w-xl text-[15px] leading-[1.7] text-pretty text-muted-foreground"
+            style={{ animationDelay: "160ms" }}
+          >
             Stroke is a fast desktop client for PostgreSQL, MySQL, SQLite, SQL Server, ClickHouse,
-            DuckDB, and more. Browse schemas, edit data inline, write SQL, and let your AI tools
-            query the database through the built-in MCP server. Native Rust, under 40 MB of memory.
+            DuckDB, and more. Browse schemas, edit data inline, and write SQL, while your AI agents
+            query the same database through the built-in MCP server. Built in Rust and Tauri, so it
+            launches instantly and stays out of your way.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-start gap-2.5">
+          <div
+            className="animate-fade-up mt-8 flex flex-wrap items-start gap-2.5"
+            style={{ animationDelay: "240ms" }}
+          >
             <SmartDownloadButton size="default" variant="default" />
             <a href="#pricing" className={buttonVariants({ variant: "ghost", size: "default" })}>
               $9.99 · Own it forever
             </a>
           </div>
 
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p
+            className="animate-fade-up mt-2 text-xs text-muted-foreground"
+            style={{ animationDelay: "300ms" }}
+          >
             Runs on macOS, Windows, and Linux. Free to try, no account needed.
           </p>
         </div>
 
-        <AppWindow className="mt-14 md:mt-20" />
+        <div className="animate-fade-up" style={{ animationDelay: "380ms" }}>
+          <AppWindow className="mt-14 md:mt-20" />
+        </div>
       </div>
     </section>
   );
@@ -119,16 +137,16 @@ function Demo() {
 
 const PILLARS = [
   {
-    title: "Under 40 MB of memory",
-    body: "Stroke is native Rust, not another Electron app hauling a browser around. It stays under 40 MB of memory no matter how large your tables get, launches instantly, and never makes your fans spin.",
+    title: "Built in Rust and Tauri",
+    body: "Stroke is a native app, not another Electron build hauling a whole browser around. It launches in an instant, stays light no matter how large your tables get, and never makes your fans spin.",
   },
   {
-    title: "Works with Claude and Cursor",
-    body: "Stroke ships an MCP server. Connect any MCP client with one click and it can inspect your schemas and run queries for you. An AI chat lives inside the app as well.",
+    title: "Made for agents and people",
+    body: "Stroke ships an MCP server, so Claude, Cursor, or any agent can read your schema and run queries in one click. The same schema-aware AI chat lives right inside the app for you.",
   },
   {
     title: "Yours, not rented",
-    body: "$9.99 buys the app outright. No subscription, no renewals, no locked features. Try everything free, pay when you decide to keep it.",
+    body: "$9.99 buys the app outright. No subscription, no renewals, no locked features. Try everything free, and pay when you decide to keep it.",
   },
 ];
 
@@ -140,7 +158,7 @@ function Pillars() {
           <div key={p.title} className="flex flex-col gap-3 px-6 py-10 md:px-8">
             <BrushStroke className="h-1.5 w-10" />
             <h3 className="text-base font-semibold tracking-tight">{p.title}</h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">{p.body}</p>
+            <p className="text-sm leading-relaxed text-pretty text-muted-foreground">{p.body}</p>
           </div>
         ))}
       </div>
@@ -159,7 +177,7 @@ const DATABASES = [
   { name: "CockroachDB", Icon: SiCockroachlabs },
   { name: "Turso / LibSQL", Icon: SiTurso },
   { name: "Cloudflare D1", Icon: SiCloudflare },
-  { name: "BigQuery", Icon: SiGooglebigquery, soon: true },
+  { name: "Redis", Icon: SiRedis, soon: true },
 ] as const;
 
 function Databases() {
@@ -278,8 +296,65 @@ function Features() {
             >
               <f.icon className="size-4 text-muted-foreground" strokeWidth={1.5} />
               <h3 className="text-sm font-semibold">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+              <p className="text-sm leading-relaxed text-pretty text-muted-foreground">{f.desc}</p>
             </div>
+          ))}
+        </div>
+
+        <div className="mt-10">
+          <Link
+            to="/features"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            See all features →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function initialsFrom(name: string) {
+  return name.trim().charAt(0).toUpperCase() || "?";
+}
+
+function Reviews() {
+  const { data: reviews } = useQuery(approvedReviewsQueryOptions());
+
+  // Nothing approved yet → don't render an empty section.
+  if (!reviews || reviews.length === 0) return null;
+
+  return (
+    <section id="reviews" className="scroll-mt-16 border-b border-border/40">
+      <div className="mx-auto max-w-4xl px-6 py-14">
+        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">Reviews</p>
+        <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
+          What people say about Stroke
+        </h2>
+
+        <div className="mt-10 gap-4 [column-fill:_balance] sm:columns-2 lg:columns-3">
+          {reviews.map((r) => (
+            <figure
+              key={r.id}
+              className="mb-4 flex break-inside-avoid flex-col gap-4 rounded-lg border border-border/50 bg-muted/20 p-5 transition-colors hover:border-border hover:bg-muted/40"
+            >
+              <blockquote className="text-sm leading-relaxed text-foreground/90">
+                “{r.body}”
+              </blockquote>
+              <figcaption className="mt-auto flex items-center gap-2.5">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground/8 text-[10px] font-semibold text-muted-foreground uppercase ring-1 ring-border/60">
+                  {initialsFrom(r.authorName)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-medium">{r.authorName}</span>
+                  {r.title ? (
+                    <span className="block truncate text-[11px] text-muted-foreground">
+                      {r.title}
+                    </span>
+                  ) : null}
+                </span>
+              </figcaption>
+            </figure>
           ))}
         </div>
       </div>
@@ -366,7 +441,7 @@ function Pricing() {
                 to={user ? "/app/billing" : "/login"}
                 className={buttonVariants({ variant: "default", size: "default" })}
               >
-                Buy Stroke — $9.99
+                Buy Stroke for $9.99
               </Link>
               <p className="mt-3 text-xs text-muted-foreground">
                 One-time payment. No recurring charges.
@@ -381,15 +456,15 @@ function Pricing() {
             <h3 className="text-sm font-semibold">Running a team?</h3>
             <p className="mt-1 max-w-md text-[13px] text-muted-foreground">
               One <strong className="font-medium text-foreground">$99</strong> purchase licenses
-              everyone on your company&apos;s email domain. Each teammate gets their own key — no
-              seats to manage, no per-user fees.
+              everyone on your company&apos;s email domain. Each teammate gets their own key, with
+              no seats to manage and no per-user fees.
             </p>
           </div>
           <Link
             to={user ? "/app/billing" : "/login"}
             className={buttonVariants({ variant: "outline", size: "default" })}
           >
-            Buy Team — $99
+            Buy Team for $99
           </Link>
         </div>
       </div>
@@ -425,7 +500,9 @@ function Faq() {
           {FAQ_ITEMS.map((item) => (
             <div key={item.q}>
               <h3 className="text-sm font-semibold">{item.q}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+              <p className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground">
+                {item.a}
+              </p>
             </div>
           ))}
         </div>

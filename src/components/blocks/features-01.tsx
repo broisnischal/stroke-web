@@ -5,7 +5,7 @@ const features = [
     icon: DatabaseIcon,
     title: "Every database, one studio",
     description:
-      "PostgreSQL, MySQL, SQLite, Turso/LibSQL, and Cloudflare D1 — connect once and pick up where you left off.",
+      "PostgreSQL, MySQL, SQLite, Turso/LibSQL, and Cloudflare D1. Connect once and pick up where you left off.",
   },
   {
     icon: PlugIcon,

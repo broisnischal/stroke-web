@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_auth/app/billing")({
 function BillingPage() {
   const location = useLocation();
   const search = new URLSearchParams(location.search);
-  // Dodo appends its own status to our return URL — success=true only means
+  // Dodo appends its own status to our return URL; success=true only means
   // "came back from checkout", not "the payment went through".
   const returnedStatus = search.get("status");
   const paymentFailed = returnedStatus === "failed" || returnedStatus === "cancelled";
@@ -149,7 +149,7 @@ function BillingPage() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          You can try again whenever you're ready — the app keeps working free in the meantime. If
+          You can try again whenever you're ready. The app keeps working free in the meantime. If
           the problem repeats, a different card usually resolves it, or reach us through the support
           page.
         </p>
@@ -382,7 +382,7 @@ function BillingPage() {
         </div>
       )}
 
-      {/* License key — personal, team owner, or covered member */}
+      {/* License key: personal, team owner, or covered member */}
       {license && (
         <section className="space-y-2.5">
           <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
@@ -441,7 +441,7 @@ function BillingPage() {
         </section>
       )}
 
-      {/* Personal (Pro) purchase — only when the user has no license at all */}
+      {/* Personal (Pro) purchase: only when the user has no license at all */}
       {!license && (
         <section className="space-y-2.5">
           <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
@@ -460,7 +460,7 @@ function BillingPage() {
                   "One-time payment · every update included",
                 ].map((perk) => (
                   <li key={perk} className="flex items-start gap-2">
-                    <span className="mt-px font-mono text-muted-foreground/50">—</span>
+                    <span className="mt-px font-mono text-muted-foreground/50">·</span>
                     <span>{perk}</span>
                   </li>
                 ))}
@@ -482,7 +482,7 @@ function BillingPage() {
         </section>
       )}
 
-      {/* Team purchase — when configured and the user isn't already on a team */}
+      {/* Team purchase: when configured and the user isn't already on a team */}
       {enterprise?.available && enterprise.role === "none" && (
         <section className="space-y-2.5">
           <p className="font-mono text-[9px] font-medium tracking-widest text-muted-foreground/60 uppercase">
@@ -491,8 +491,8 @@ function BillingPage() {
           <div className="overflow-hidden rounded-md border border-border/40">
             <div className="space-y-3 px-4 py-4">
               <p className="text-sm text-muted-foreground">
-                One ${TEAM_PRICE_USD} purchase licenses everyone on your company's email domain — no
-                seats to manage, no per-user fees.
+                One ${TEAM_PRICE_USD} purchase licenses everyone on your company's email domain,
+                with no seats to manage and no per-user fees.
               </p>
               <ul className="space-y-1.5 text-xs text-muted-foreground">
                 {[
@@ -502,7 +502,7 @@ function BillingPage() {
                   "One-time payment · every update included",
                 ].map((perk) => (
                   <li key={perk} className="flex items-start gap-2">
-                    <span className="mt-px font-mono text-muted-foreground/50">—</span>
+                    <span className="mt-px font-mono text-muted-foreground/50">·</span>
                     <span>{perk}</span>
                   </li>
                 ))}

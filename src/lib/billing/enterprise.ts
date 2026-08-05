@@ -8,7 +8,7 @@ export { STROKE_TEAM_SLUG, TEAM_PLAN, TEAM_PRICE_USD } from "./plans";
 
 /**
  * Free/consumer email providers. The Team plan grants a license to everyone on
- * a domain, so it must never be sold for one of these — otherwise a single $99
+ * a domain, so it must never be sold for one of these; otherwise a single $99
  * purchase would cover every gmail.com (etc.) account. Checkout is rejected
  * when the buyer's email domain is in this set.
  */

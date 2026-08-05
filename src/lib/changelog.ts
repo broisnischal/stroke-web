@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
 import { REPO_SLUG } from "./releases";
 
 /** Human-facing link to the changelog source on GitHub. */
 export const CHANGELOG_URL = `https://github.com/${REPO_SLUG}/blob/main/CHANGELOG.md`;
-// Server-side proxy (src/routes/api/changelog.ts) — cached, avoids rate limits.
+// Server-side proxy (src/routes/api/changelog.ts), cached, avoids rate limits.
 const CHANGELOG_API = "/api/changelog";
 
 export interface ChangelogEntry {
@@ -54,19 +54,26 @@ export function parseChangelog(markdown: string): ChangelogEntry[] {
 
 async function fetchChangelog(): Promise<ChangelogEntry[]> {
   const res = await fetch(CHANGELOG_API);
-  // A failed response carries an error object, not markdown — surface it as a
+  // A failed response carries an error object, not markdown, so surface it as a
   // query error instead of rendering the raw JSON.
   if (!res.ok) throw new Error(`Changelog API responded with ${res.status}`);
   const text = await res.text();
   return parseChangelog(text);
 }
 
-export function useChangelog() {
-  return useQuery({
+/**
+ * Shared query config so the changelog can be prefetched (e.g. on nav hover)
+ * and read by the page from the same cache entry.
+ */
+export const changelogQueryOptions = () =>
+  queryOptions({
     queryKey: ["changelog"],
     queryFn: fetchChangelog,
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
     retry: 1,
   });
+
+export function useChangelog() {
+  return useQuery(changelogQueryOptions());
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 export const REPO_SLUG = "broisnischal/stroke";
 export const RELEASES_URL = `https://github.com/${REPO_SLUG}/releases`;
-// Server-side proxy (src/routes/api/releases.ts) — cached, and immune to
+// Server-side proxy (src/routes/api/releases.ts), cached and immune to
 // GitHub's per-visitor rate limits.
 const RELEASES_API = "/api/releases";
 
@@ -26,7 +26,7 @@ export interface GitHubRelease {
 
 async function fetchReleases(): Promise<GitHubRelease[]> {
   const res = await fetch(RELEASES_API);
-  // A failed response carries an error object, not release data — surface it
+  // A failed response carries an error object, not release data, so surface it
   // as a query error instead of rendering garbage.
   if (!res.ok) throw new Error(`Releases API responded with ${res.status}`);
   const data: unknown = await res.json();
@@ -69,7 +69,7 @@ interface NavigatorUAData {
 
 /**
  * Detects OS + arch using Web APIs. Run client-side only.
- * On macOS we assume Apple Silicon unless the browser tells us it's x86 —
+ * On macOS we assume Apple Silicon unless the browser tells us it's x86,
  * nearly every Mac in use today is arm64.
  */
 export async function detectPlatform(): Promise<Platform | null> {

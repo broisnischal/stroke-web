@@ -17,6 +17,7 @@ import {
 import { handleBillingEvent, userHasActiveLicense } from "#/lib/billing/service";
 import { db } from "#/lib/db";
 import * as schema from "#/lib/db/schema";
+import { createPlunkContact } from "#/lib/mail/client";
 
 export const dodoClient = new DodoPayments({
   bearerToken: env.DODO_PAYMENTS_API_KEY,
@@ -85,7 +86,7 @@ export const auth = betterAuth({
         const existing = await getEnterpriseDomain(domain);
         if (existing && existing.status === "active") {
           throw new APIError("CONFLICT", {
-            message: `${domain} already has a Stroke Team license — everyone on your domain is covered, so there's nothing more to buy.`,
+            message: `${domain} already has a Stroke Team license. Everyone on your domain is covered, so there's nothing more to buy.`,
           });
         }
       } else if (await userHasActiveLicense(session.user.id)) {
@@ -111,6 +112,18 @@ export const auth = betterAuth({
         },
       };
     }),
+  },
+
+  // Add every new user to Plunk as a contact. Best-effort: createPlunkContact
+  // never throws, so a mail-provider hiccup can't block sign-up.
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await createPlunkContact({ email: user.email, name: user.name });
+        },
+      },
+    },
   },
 
   // https://www.better-auth.com/docs/integrations/tanstack#usage-tips
