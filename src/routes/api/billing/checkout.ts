@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/billing/checkout")({
         }
 
         try {
-          const checkoutUrl = await billing.createCheckoutSession({
+          const { checkoutUrl, sessionId } = await billing.createCheckoutSession({
             productId: env.DODO_PRODUCT_ID,
             customer: {
               email: user.email,
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/billing/checkout")({
             returnUrl: `${env.VITE_BASE_URL}/app/billing?success=true`,
           });
 
-          return Response.json({ checkoutUrl });
+          return Response.json({ checkoutUrl, sessionId });
         } catch (err) {
           console.error("[billing/checkout]", err);
           return new Response("Failed to create checkout session", { status: 500 });

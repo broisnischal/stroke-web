@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import {
   $createCheckoutSession,
+  $recoverLicense,
   billingQueryOptions,
   licenseQueryOptions,
 } from "#/lib/billing/functions";
@@ -38,6 +39,7 @@ function BillingPage() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pollExpired, setPollExpired] = useState(false);
+  const [recovering, setRecovering] = useState(false);
 
   const isActive = subscription?.status === "active";
 
@@ -46,12 +48,26 @@ function BillingPage() {
   useEffect(() => {
     if (!success || license) return;
 
+    const sessionId = sessionStorage.getItem("dodo_session_id") ?? undefined;
     let attempts = 0;
     const MAX = 15; // 15 × 2 s = 30 s
 
     const id = setInterval(async () => {
       attempts++;
-      await queryClient.invalidateQueries({ queryKey: ["billing"] });
+
+      await queryClient.refetchQueries({ queryKey: ["billing"] });
+
+      // Attempt recovery at 2s, 10s, 20s — passes sessionId so the server
+      // can verify with Dodo directly without waiting for the webhook.
+      if (attempts === 1 || attempts === 5 || attempts === 10) {
+        try {
+          await $recoverLicense({ data: { sessionId } });
+          await queryClient.refetchQueries({ queryKey: ["billing"] });
+        } catch {
+          // ignore, keep polling
+        }
+      }
+
       if (attempts >= MAX) {
         clearInterval(id);
         setPollExpired(true);
@@ -64,11 +80,26 @@ function BillingPage() {
   async function handleUpgrade() {
     setLoading(true);
     try {
-      const { checkoutUrl } = await $createCheckoutSession();
+      const { checkoutUrl, sessionId } = await $createCheckoutSession();
+      sessionStorage.setItem("dodo_session_id", sessionId);
       window.location.href = checkoutUrl;
     } catch {
       toast.error("Failed to start checkout. Please try again.");
       setLoading(false);
+    }
+  }
+
+  async function handleManualRefresh() {
+    setRecovering(true);
+    try {
+      const sessionId = sessionStorage.getItem("dodo_session_id") ?? undefined;
+      await $recoverLicense({ data: { sessionId } });
+      await queryClient.refetchQueries({ queryKey: ["billing"] });
+      setPollExpired(false);
+    } catch {
+      // ignore
+    } finally {
+      setRecovering(false);
     }
   }
 
@@ -111,7 +142,17 @@ function BillingPage() {
             {license
               ? "Payment confirmed — your license key is ready below."
               : pollExpired
-                ? "Still processing — your key will appear here once confirmed. Try refreshing in a moment."
+                ? <span className="flex items-center gap-3">
+                    <span>Still processing. Try refreshing manually.</span>
+                    <button
+                      type="button"
+                      onClick={handleManualRefresh}
+                      disabled={recovering}
+                      className="underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                    >
+                      {recovering ? "Checking…" : "Refresh now"}
+                    </button>
+                  </span>
                 : "Payment received! Generating your license key…"}
           </span>
         </div>

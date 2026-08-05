@@ -23,3 +23,5 @@ dist
 /public/build
 
 .tanstack
+# Local agent artifacts
+.claude/

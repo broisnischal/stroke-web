@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 import DodoPayments from "dodopayments";
 import { Webhook } from "standardwebhooks";
 
-import type { BillingEvent, BillingProvider, CheckoutParams } from "./types";
+import type { BillingEvent, BillingProvider, CheckoutParams, CheckoutResult, CheckoutSessionVerification } from "./types";
 
 export function createDodoProvider(config: {
   apiKey: string;
@@ -20,7 +20,7 @@ export function createDodoProvider(config: {
   return {
     name: "dodo",
 
-    async createCheckoutSession(params: CheckoutParams): Promise<string> {
+    async createCheckoutSession(params: CheckoutParams): Promise<CheckoutResult> {
       const session = await client.checkoutSessions.create({
         product_cart: [
           {
@@ -36,7 +36,16 @@ export function createDodoProvider(config: {
         return_url: params.returnUrl,
       } as Parameters<typeof client.checkoutSessions.create>[0]);
 
-      return (session as { checkout_url: string }).checkout_url;
+      const s = session as { checkout_url: string; session_id: string };
+      return { checkoutUrl: s.checkout_url, sessionId: s.session_id };
+    },
+
+    async verifyCheckoutSession(sessionId: string): Promise<CheckoutSessionVerification> {
+      const session = await client.checkoutSessions.retrieve(sessionId);
+      return {
+        succeeded: session.payment_status === "succeeded",
+        paymentId: session.payment_id ?? null,
+      };
     },
 
     verifyWebhook(rawBody: string, headers: Record<string, string>): BillingEvent {

@@ -42,8 +42,19 @@ export interface CheckoutParams {
   returnUrl: string;
 }
 
+export interface CheckoutResult {
+  checkoutUrl: string;
+  sessionId: string;
+}
+
+export interface CheckoutSessionVerification {
+  succeeded: boolean;
+  paymentId: string | null;
+}
+
 export interface BillingProvider {
   readonly name: string;
-  createCheckoutSession(params: CheckoutParams): Promise<string>;
+  createCheckoutSession(params: CheckoutParams): Promise<CheckoutResult>;
+  verifyCheckoutSession(sessionId: string): Promise<CheckoutSessionVerification>;
   verifyWebhook(rawBody: string, headers: Record<string, string>): BillingEvent;
 }
