@@ -3,22 +3,27 @@ import { env } from "cloudflare:workers";
 
 import { env as serverEnv } from "#/env/server";
 import {
-  neuronsUsed,
-  normalizeMessages,
-  toOpenAiCompletion,
-  toOpenAiStream,
-} from "#/lib/ai/openai-compat";
-
-import {
   decide,
   deviceIdFrom,
   FAST_MODEL,
   ipFrom,
-  OVERFLOW_MODEL,
+  OVERFLOW_MODELS,
   PRIMARY_MODEL,
   quotaError,
   recordUsage,
 } from "#/lib/ai/free-tier";
+import {
+  collectStreamText,
+  looksLikeToolRefusal,
+  mightBecomeRefusal,
+  neuronsUsed,
+  normalizeMessages,
+  parseTextToolCalls,
+  peekStreamHead,
+  toolCallStream,
+  toOpenAiCompletion,
+  toOpenAiStream,
+} from "#/lib/ai/openai-compat";
 
 /**
  * POST /api/ai/chat/completions
@@ -41,6 +46,34 @@ type ChatBody = {
   tools?: unknown[];
   tool_choice?: unknown;
 };
+
+/**
+ * Cheap prefix test, so a normal answer is never buffered on suspicion. The
+ * printed-call shapes all open the same way.
+ */
+function startsLikeToolCall(head: string): boolean {
+  const t = head.trimStart();
+  return (
+    t.startsWith('{"type": "function"') ||
+    t.startsWith('{"type":"function"') ||
+    t.startsWith('{"name"') ||
+    t.startsWith('{ "name"') ||
+    t.startsWith("<tool_call>") ||
+    t.startsWith("<|python_tag|>")
+  );
+}
+
+/** Replay text we buffered but could not turn into a call. */
+function textStream(text: string): ReadableStream {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ response: text })}\n\n`));
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  });
+}
 
 /** "stroke-free-fast" is the only alias that asks for the smaller model. */
 function wantsFast(model: string | undefined): boolean {
@@ -84,27 +117,6 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
 
         const hasTools = Array.isArray(body.tools) && body.tools.length > 0;
 
-        // TEMPORARY diagnostic: the desktop app gets refusals that curl with the
-        // same nominal shape does not, so log what actually arrives. Remove once
-        // the discrepancy is identified.
-        console.log(
-          "ai-req",
-          JSON.stringify({
-            model: body.model,
-            stream: body.stream,
-            temperature: body.temperature,
-            max_tokens: body.max_tokens,
-            toolCount: Array.isArray(body.tools) ? body.tools.length : 0,
-            msgs: (body.messages as { role?: string; content?: unknown }[]).map((m) => ({
-              role: m.role,
-              type: Array.isArray(m.content) ? "array" : typeof m.content,
-              len:
-                typeof m.content === "string"
-                  ? m.content.length
-                  : JSON.stringify(m.content ?? "").length,
-            })),
-          }),
-        );
         const ip = ipFrom(request);
         const verdict = await decide(deviceId, ip);
         if (!verdict.allow) return quotaError(verdict.code, verdict.retryAfter);
@@ -114,15 +126,18 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
         // answering a non-streaming request with SSE breaks the caller's parser.
         const stream = body.stream === true;
 
-        const shared = {
+        // Two payloads, not one: the second is the escape hatch for a model that
+        // answers a greeting with "your input is not sufficient" purely because
+        // tools were on the table.
+        const base = {
           // Workers AI only understands string content; see normalizeMessages.
           messages: normalizeMessages(body.messages),
           temperature: body.temperature ?? 0,
           max_tokens: body.max_tokens ?? 4096,
-          ...(Array.isArray(body.tools) && body.tools.length > 0
-            ? { tools: body.tools, tool_choice: body.tool_choice ?? "auto" }
-            : {}),
         };
+        const shared = hasTools
+          ? { ...base, tools: body.tools, tool_choice: body.tool_choice ?? "auto" }
+          : base;
 
         const runPrimary = async () => {
           // Model choice is made HERE, not by the client's alias, so cost and
@@ -133,6 +148,7 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
           //     do" have no business costing 70B neurons, and the shared daily
           //     allocation is what limits how many people we can serve.
           const model = hasTools || !wantsFast(body.model) ? PRIMARY_MODEL : FAST_MODEL;
+          primaryModel = model;
           // The generated binding types key the options off a literal model-name
           // union, which cannot express a model chosen at runtime from our own
           // aliases — so the call is made through a narrow structural shim. The
@@ -141,28 +157,53 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
           const ai = env.AI as unknown as {
             run: (model: string, options: Record<string, unknown>) => Promise<unknown>;
           };
+          workersAi = ai;
           return await ai.run(model, { ...shared, stream });
         };
 
+        /**
+         * Same turn, second chance, with the tools taken away.
+         *
+         * The model didn't decline the request — it declined to pick a tool, and
+         * then said so instead of answering. Without the tools in front of it the
+         * same prompt gets a normal reply, which is what the user asked for.
+         */
+        const runWithoutTools = async () => await workersAi!.run(primaryModel, { ...base, stream });
+
+        // Free OpenRouter slugs are individually unreliable — they get retired
+        // (404 "use this slug instead") and rate-limited upstream (429) without
+        // warning. Walk the list until one answers, so overflow degrades model by
+        // model instead of collapsing on the first bad one.
         const runOverflow = async () => {
           const key = serverEnv.OPENROUTER_POOL_KEY;
           if (!key) throw new Error("overflow provider not configured");
-          return fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              authorization: `Bearer ${key}`,
-              "http-referer": "https://stroke.click",
-              "x-title": "Stroke",
-            },
-            body: JSON.stringify({ ...shared, stream, model: OVERFLOW_MODEL }),
-          });
+
+          let lastDetail = "";
+          for (const model of OVERFLOW_MODELS) {
+            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+                authorization: `Bearer ${key}`,
+                "http-referer": "https://stroke.click",
+                "x-title": "Stroke",
+              },
+              body: JSON.stringify({ ...shared, stream, model }),
+            });
+            if (res.ok) return res;
+            lastDetail = (await res.text().catch(() => "")).slice(0, 200);
+            console.log("overflow model rejected", model, res.status, lastDetail);
+          }
+          throw new Error(`all overflow models failed: ${lastDetail}`);
         };
 
         // A provider that errors must not burn the user's daily allowance, so
         // usage is booked only after one of them accepts the request.
         let provider = verdict.provider;
         let raw: unknown;
+        let primaryModel = PRIMARY_MODEL;
+        let workersAi: { run: (m: string, o: Record<string, unknown>) => Promise<unknown> } | null =
+          null;
         try {
           raw = provider === "primary" ? await runPrimary() : await runOverflow();
         } catch (primaryErr) {
@@ -229,9 +270,41 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
         // and must be translated before it reaches an OpenAI-shaped client.
         const clientModel = body.model ?? "stroke-free";
 
+        let out = raw as ReadableStream;
+        if (stream && hasTools) {
+          // A glance, not a gulp. Reading 160 characters before forwarding any of
+          // them cost every tool-enabled turn its streaming — a short answer
+          // arrived in one lump at the end. 24 is enough to tell a printed tool
+          // call from prose, and only an opening that could still become a
+          // refusal is read any further.
+          let peek = await peekStreamHead(out, 24);
+          if (
+            !peek.sawToolCall &&
+            !startsLikeToolCall(peek.head) &&
+            mightBecomeRefusal(peek.head)
+          ) {
+            peek = await peekStreamHead(peek.stream, 160);
+          }
+          if (!peek.sawToolCall && looksLikeToolRefusal(peek.head)) {
+            await peek.stream.cancel().catch(() => {});
+            out = (await runWithoutTools()) as ReadableStream;
+          } else if (!peek.sawToolCall && startsLikeToolCall(peek.head)) {
+            // The model is typing its tool call instead of calling it. Buffer the
+            // whole thing — a call has nothing to stream anyway — and hand back a
+            // real one. If it doesn't parse, replay the text as written.
+            // `peek.stream` replays from the first byte, head included: adding
+            // `peek.head` to it would count the opening twice.
+            const text = await collectStreamText(peek.stream);
+            const calls = parseTextToolCalls(text);
+            out = calls ? toolCallStream(calls) : textStream(text);
+          } else {
+            out = peek.stream;
+          }
+        }
+
         if (stream) {
           await recordUsage({ deviceId, ip, day: verdict.day, provider });
-          return new Response(toOpenAiStream(raw as ReadableStream, clientModel), {
+          return new Response(toOpenAiStream(out, clientModel), {
             status: 200,
             headers: {
               "content-type": "text/event-stream",
@@ -242,7 +315,35 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
           });
         }
 
-        const completion = toOpenAiCompletion(raw, clientModel);
+        let result = raw;
+        if (hasTools) {
+          const first = toOpenAiCompletion(result, clientModel).choices[0];
+          if (!first.message.tool_calls && looksLikeToolRefusal(first.message.content)) {
+            result = await runWithoutTools();
+          }
+        }
+
+        const completion = toOpenAiCompletion(result, clientModel);
+        // Same recovery on the non-streaming path: a printed call is still a call.
+        const printed = completion.choices[0].message.tool_calls
+          ? null
+          : parseTextToolCalls(completion.choices[0].message.content);
+        if (printed) {
+          completion.choices[0] = {
+            ...completion.choices[0],
+            message: {
+              role: "assistant",
+              content: null,
+              tool_calls: printed.map((c, i) => ({
+                index: i,
+                id: `call_${i}_${(c.name ?? "fn").replace(/[^\w-]/g, "")}`,
+                type: "function" as const,
+                function: { name: c.name ?? "", arguments: JSON.stringify(c.arguments ?? {}) },
+              })),
+            },
+            finish_reason: "tool_calls",
+          };
+        }
         await recordUsage({
           deviceId,
           ip,
@@ -255,7 +356,7 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
           headers: {
             "x-stroke-provider": provider,
             // The binding reports real neurons consumed — exact metering, no estimate.
-            "x-stroke-neurons": String(neuronsUsed(raw)),
+            "x-stroke-neurons": String(neuronsUsed(result)),
           },
         });
       },

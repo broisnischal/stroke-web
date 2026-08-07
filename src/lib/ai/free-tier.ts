@@ -39,8 +39,24 @@ export const PRIMARY_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
  */
 export const FAST_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
-/** Model served by the overflow (OpenRouter free pool) path. */
-export const OVERFLOW_MODEL = "deepseek/deepseek-chat-v3-0324:free";
+/**
+ * Model served by the overflow (OpenRouter free pool) path.
+ *
+ * Must be a `:free` slug that supports tools — the agent is useless without
+ * them. OpenRouter retires free slugs without notice (deepseek-chat-v3-0324:free
+ * became paid-only and started answering 404 with "use this slug instead"), so
+ * if overflow starts failing, re-check `supported_parameters` on
+ * https://openrouter.ai/api/v1/models rather than assuming the key is wrong.
+ */
+export const OVERFLOW_MODELS = [
+  "google/gemma-4-31b-it:free",
+  "inclusionai/ling-3.0-flash:free",
+  "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "cohere/north-mini-code:free",
+] as const;
+
+/** @deprecated kept so a stale import can't break the build; prefer the list. */
+export const OVERFLOW_MODEL = OVERFLOW_MODELS[0];
 
 /**
  * The catalogue the desktop app shows. Deliberately tiny: these are aliases we
@@ -68,11 +84,7 @@ export function utcDay(now = new Date()): string {
 
 /** Seconds until the next UTC midnight — the honest Retry-After for a daily cap. */
 export function secondsUntilUtcMidnight(now = new Date()): number {
-  const next = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
-  );
+  const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
   return Math.max(1, Math.ceil((next - now.getTime()) / 1000));
 }
 
