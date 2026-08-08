@@ -168,7 +168,18 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
          * then said so instead of answering. Without the tools in front of it the
          * same prompt gets a normal reply, which is what the user asked for.
          */
-        const runWithoutTools = async () => await workersAi!.run(primaryModel, { ...base, stream });
+        const runWithoutTools = async (head: string) => {
+          // Logged because this is invisible otherwise: the user sees a normal
+          // answer either way, so a matcher that stops recognising a refusal
+          // (the model's phrasing drifts, or a new template lands) looks exactly
+          // like a matcher that never has to fire. The head is what to add to
+          // the patterns when this stops appearing and complaints start.
+          console.log(
+            "free-tier: tool refusal, retrying without tools —",
+            JSON.stringify(head.slice(0, 120)),
+          );
+          return await workersAi!.run(primaryModel, { ...base, stream });
+        };
 
         // Free OpenRouter slugs are individually unreliable — they get retired
         // (404 "use this slug instead") and rate-limited upstream (429) without
@@ -287,7 +298,7 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
           }
           if (!peek.sawToolCall && looksLikeToolRefusal(peek.head)) {
             await peek.stream.cancel().catch(() => {});
-            out = (await runWithoutTools()) as ReadableStream;
+            out = (await runWithoutTools(peek.head)) as ReadableStream;
           } else if (!peek.sawToolCall && startsLikeToolCall(peek.head)) {
             // The model is typing its tool call instead of calling it. Buffer the
             // whole thing — a call has nothing to stream anyway — and hand back a
@@ -319,7 +330,7 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
         if (hasTools) {
           const first = toOpenAiCompletion(result, clientModel).choices[0];
           if (!first.message.tool_calls && looksLikeToolRefusal(first.message.content)) {
-            result = await runWithoutTools();
+            result = await runWithoutTools(first.message.content ?? "");
           }
         }
 
