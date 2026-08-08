@@ -1,24 +1,82 @@
-This is free and unencumbered software released into the public domain.
+Stroke Sustainable Use License
+Version 1.0
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2026 Nischal Dahal and Stroke contributors
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Applies to stroke-web: the Stroke website, the licence service, the payment
+integration, and the free AI proxy.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+-------------------------------------------------------------------------------
 
-For more information, please refer to <https://unlicense.org>
+Plain-English summary (not legally binding — the terms below govern):
+
+  - You CAN read, audit, modify and build this source, and run it yourself for
+    development, testing, or to satisfy yourself about what the service does
+    with your data.
+  - You CANNOT sell it, rebrand it, or run it as a service for other people.
+  - You CANNOT use it to issue Stroke licences, or to stand up an alternative
+    activation, update, or distribution endpoint for Stroke.
+  - The official service runs at stroke.click.
+
+This is the same licence as the Stroke desktop application, deliberately. This
+repository is the service that issues and validates the licences that fund
+Stroke, and takes payment. A backend on freer terms than the product it licenses
+would be an open invitation to strip the gating and reroute the clients.
+
+-------------------------------------------------------------------------------
+
+Terms
+
+1. Grant. Subject to the conditions below, you are granted a worldwide,
+   royalty-free, non-exclusive, non-transferable license to use, copy, modify,
+   and create derivative works of this software, and to distribute copies of
+   it, in source or compiled form, for any Permitted Purpose.
+
+2. Permitted Purposes. A Permitted Purpose is any use EXCEPT:
+
+   a. selling the software, charging any fee for it, or including it in a
+      product or bundle that is sold or licensed for a fee;
+
+   b. providing the software to third parties as a hosted, managed, or
+      embedded service, whether paid or as part of a paid offering;
+
+   c. distributing the software, modified or unmodified, under a different
+      name or brand, or in a way that suggests it is your own product;
+
+   d. operating it, in whole or in part, as a licence-issuing, licence-
+      validating, activation, update, or distribution endpoint for Stroke, or
+      configuring any Stroke build to use such an endpoint other than the
+      official one. (You may run it locally for development, testing, and
+      contribution.)
+
+3. Conditions. Any copy or substantial portion you distribute must retain this
+   license text, the copyright notice above, and a link to the official
+   repository. Modified copies must be clearly marked as modified.
+
+4. Official service. The official Stroke website, licence service, and update
+   channel are operated by the copyright holder at stroke.click. This license
+   grants no right to operate a competing one for the software.
+
+5. Trademarks. This license grants no rights to the "Stroke" name, logo, or
+   other trademarks of the copyright holder.
+
+6. Contributions. Unless you and the copyright holder agree otherwise in
+   writing, contributions you submit to the official repository may be
+   distributed under this license.
+
+7. Termination. Your rights under this license end automatically if you
+   breach it. Rights are reinstated if the breach is fully cured within 30
+   days of you becoming aware of it, unless the copyright holder notifies you
+   otherwise.
+
+8. Warranty and liability. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY
+   OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+   LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For uses outside these terms (reselling, OEM bundling, managed hosting, or
+anything you are unsure about), contact the copyright holder via
+https://stroke.click.
