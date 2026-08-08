@@ -202,11 +202,41 @@ export function toOpenAiStream(source: ReadableStream, model: string): ReadableS
  * the very first message they ever send. The text is the only signal we get:
  * there is no flag on the response that says "I declined because of the tools".
  */
-const TOOL_REFUSAL =
-  /^[\s"'*]*(?:(?:your |the )?input is (?:not sufficient|incomplete|not properly formatted|insufficient)|i (?:don'?t|do not) have enough (?:information|context)|please (?:provide (?:more|further) (?:details|information)|specify the task))/i;
+/**
+ * Matching by sentence was a losing game. The list below used to spell out four
+ * variants of "your input is not sufficient", and the failure users actually
+ * hit — "Your input is lacking necessary details." — was none of them, so the
+ * retry never fired and the greeting stayed broken. These match the *shape*
+ * instead: a subject the model is calling inadequate, or a bare request for
+ * more input.
+ */
+const REFUSAL_SUBJECTS = ["input", "question", "request", "query", "message", "prompt"];
+
+const REFUSAL_SUBJECT = new RegExp(
+  `^[\\s"'*]*(?:your |the )?(?:${REFUSAL_SUBJECTS.join("|")})\\s+(?:is|seems|appears|looks)\\b` +
+    `[^.!?]{0,40}?\\b(?:not sufficient|insufficient|incomplete|lacking|missing|unclear|vague|` +
+    `ambiguous|empty|too (?:short|vague|broad|general)|not (?:clear|specific|enough|properly formatted))`,
+  "i",
+);
+
+const REFUSAL_ASK =
+  /\bplease\s+(?:provide|specify|clarify|give|share)\b[^.!?]{0,40}?\b(?:more|further|additional|details?|information|context|the task)/i;
+
+const NO_CONTEXT =
+  /^[\s"'*]*i (?:don'?t|do not) have (?:enough|sufficient|the) (?:information|context|details)/i;
+
+/**
+ * A long answer that happens to end by asking for specifics is a real answer;
+ * only a reply that is *nothing but* the complaint is worth regenerating. The
+ * cap also keeps the streaming path honest — it only ever sees a 160-char head.
+ */
+const REFUSAL_MAX_CHARS = 400;
 
 export function looksLikeToolRefusal(text: string | null | undefined): boolean {
-  return typeof text === "string" && TOOL_REFUSAL.test(text.trim());
+  if (typeof text !== "string") return false;
+  const t = text.trim();
+  if (!t || t.length > REFUSAL_MAX_CHARS) return false;
+  return REFUSAL_SUBJECT.test(t) || NO_CONTEXT.test(t) || REFUSAL_ASK.test(t);
 }
 
 /**
@@ -218,11 +248,25 @@ export function looksLikeToolRefusal(text: string | null | undefined): boolean {
  * that could still become a refusal is worth reading further, and everything
  * else is forwarded immediately.
  */
-const REFUSAL_OPENING =
-  /^[\s"'*]*(?:(?:your |the )?input (?:is\b.*)?$|(?:your |the )?inpu?t?$|i (?:don'?t|do not)(?: have(?: enough)?)?$|i$|please(?: provide| specify)?$|(?:your |the )?input is (?:not|inc|ins))/i;
-
 export function mightBecomeRefusal(head: string): boolean {
-  return looksLikeToolRefusal(head) || REFUSAL_OPENING.test(head.trim());
+  if (looksLikeToolRefusal(head)) return true;
+  const t = head
+    .trim()
+    .replace(/^["'*\s]+/, "")
+    .toLowerCase();
+  // Nothing decodable yet — a couple of bytes of a multi-byte character, say.
+  if (!t) return true;
+  // "Your inp" / "Your input is lacking ne": a complaint about the input is
+  // still on the table either way, so read further. Prefix matching in both
+  // directions covers the head being shorter *or* longer than the subject word.
+  const rest = t.replace(/^(?:your|the)\s*/, "");
+  if (REFUSAL_SUBJECTS.some((s) => s.startsWith(rest) || rest.startsWith(s))) return true;
+  // Anchored at the end on purpose: these only widen the peek while the opening
+  // is still ambiguous. "I'll query the users table" is not, and streams at once.
+  return (
+    /^i(?:\s+(?:don'?t|do not)\b.*)?$/.test(t) ||
+    /^please(?:\s+(?:provide|specify|clarify|give|share)\b.*)?$/.test(t)
+  );
 }
 
 /**
