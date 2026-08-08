@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as IngestSplatRouteImport } from './routes/ingest/$'
 import { Route as DocsMcpRouteImport } from './routes/docs/mcp'
+import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as ApiReleasesRouteImport } from './routes/api/releases'
 import { Route as ApiChangelogRouteImport } from './routes/api/changelog'
 import { Route as AdminReviewsRouteImport } from './routes/admin/reviews'
@@ -44,6 +45,7 @@ import { Route as AuthAppReviewsRouteImport } from './routes/_auth/app/reviews'
 import { Route as AuthAppDownloadsRouteImport } from './routes/_auth/app/downloads'
 import { Route as AuthAppBillingRouteImport } from './routes/_auth/app/billing'
 import { Route as ApiAiChatCompletionsRouteImport } from './routes/api/ai/chat/completions'
+import { Route as ApiAdminTelemetrySummaryRouteImport } from './routes/api/admin/telemetry/summary'
 import { Route as ApiAdminReviewsModerateRouteImport } from './routes/api/admin/reviews/moderate'
 import { Route as ApiAdminReviewsListRouteImport } from './routes/api/admin/reviews/list'
 import { Route as ApiAdminLicenseUnrevokeRouteImport } from './routes/api/admin/license/unrevoke'
@@ -111,6 +113,11 @@ const IngestSplatRoute = IngestSplatRouteImport.update({
 const DocsMcpRoute = DocsMcpRouteImport.update({
   id: '/docs/mcp',
   path: '/docs/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
+  id: '/api/telemetry',
+  path: '/api/telemetry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiReleasesRoute = ApiReleasesRouteImport.update({
@@ -223,6 +230,12 @@ const ApiAiChatCompletionsRoute = ApiAiChatCompletionsRouteImport.update({
   path: '/api/ai/chat/completions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminTelemetrySummaryRoute =
+  ApiAdminTelemetrySummaryRouteImport.update({
+    id: '/api/admin/telemetry/summary',
+    path: '/api/admin/telemetry/summary',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAdminReviewsModerateRoute = ApiAdminReviewsModerateRouteImport.update({
   id: '/api/admin/reviews/moderate',
   path: '/api/admin/reviews/moderate',
@@ -264,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/admin/reviews': typeof AdminReviewsRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/api/telemetry': typeof ApiTelemetryRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/ingest/$': typeof IngestSplatRoute
   '/docs/': typeof DocsIndexRoute
@@ -287,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
   '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
   '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
+  '/api/admin/telemetry/summary': typeof ApiAdminTelemetrySummaryRoute
   '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRoutesByTo {
@@ -303,6 +318,7 @@ export interface FileRoutesByTo {
   '/admin/reviews': typeof AdminReviewsRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/api/telemetry': typeof ApiTelemetryRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/ingest/$': typeof IngestSplatRoute
   '/docs': typeof DocsIndexRoute
@@ -326,6 +342,7 @@ export interface FileRoutesByTo {
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
   '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
   '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
+  '/api/admin/telemetry/summary': typeof ApiAdminTelemetrySummaryRoute
   '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRoutesById {
@@ -346,6 +363,7 @@ export interface FileRoutesById {
   '/admin/reviews': typeof AdminReviewsRoute
   '/api/changelog': typeof ApiChangelogRoute
   '/api/releases': typeof ApiReleasesRoute
+  '/api/telemetry': typeof ApiTelemetryRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/ingest/$': typeof IngestSplatRoute
   '/docs/': typeof DocsIndexRoute
@@ -369,6 +387,7 @@ export interface FileRoutesById {
   '/api/admin/license/unrevoke': typeof ApiAdminLicenseUnrevokeRoute
   '/api/admin/reviews/list': typeof ApiAdminReviewsListRoute
   '/api/admin/reviews/moderate': typeof ApiAdminReviewsModerateRoute
+  '/api/admin/telemetry/summary': typeof ApiAdminTelemetrySummaryRoute
   '/api/ai/chat/completions': typeof ApiAiChatCompletionsRoute
 }
 export interface FileRouteTypes {
@@ -388,6 +407,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/api/changelog'
     | '/api/releases'
+    | '/api/telemetry'
     | '/docs/mcp'
     | '/ingest/$'
     | '/docs/'
@@ -411,6 +431,7 @@ export interface FileRouteTypes {
     | '/api/admin/license/unrevoke'
     | '/api/admin/reviews/list'
     | '/api/admin/reviews/moderate'
+    | '/api/admin/telemetry/summary'
     | '/api/ai/chat/completions'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -427,6 +448,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/api/changelog'
     | '/api/releases'
+    | '/api/telemetry'
     | '/docs/mcp'
     | '/ingest/$'
     | '/docs'
@@ -450,6 +472,7 @@ export interface FileRouteTypes {
     | '/api/admin/license/unrevoke'
     | '/api/admin/reviews/list'
     | '/api/admin/reviews/moderate'
+    | '/api/admin/telemetry/summary'
     | '/api/ai/chat/completions'
   id:
     | '__root__'
@@ -469,6 +492,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/api/changelog'
     | '/api/releases'
+    | '/api/telemetry'
     | '/docs/mcp'
     | '/ingest/$'
     | '/docs/'
@@ -492,6 +516,7 @@ export interface FileRouteTypes {
     | '/api/admin/license/unrevoke'
     | '/api/admin/reviews/list'
     | '/api/admin/reviews/moderate'
+    | '/api/admin/telemetry/summary'
     | '/api/ai/chat/completions'
   fileRoutesById: FileRoutesById
 }
@@ -509,6 +534,7 @@ export interface RootRouteChildren {
   AdminReviewsRoute: typeof AdminReviewsRoute
   ApiChangelogRoute: typeof ApiChangelogRoute
   ApiReleasesRoute: typeof ApiReleasesRoute
+  ApiTelemetryRoute: typeof ApiTelemetryRoute
   DocsMcpRoute: typeof DocsMcpRoute
   IngestSplatRoute: typeof IngestSplatRoute
   DocsIndexRoute: typeof DocsIndexRoute
@@ -527,6 +553,7 @@ export interface RootRouteChildren {
   ApiAdminLicenseUnrevokeRoute: typeof ApiAdminLicenseUnrevokeRoute
   ApiAdminReviewsListRoute: typeof ApiAdminReviewsListRoute
   ApiAdminReviewsModerateRoute: typeof ApiAdminReviewsModerateRoute
+  ApiAdminTelemetrySummaryRoute: typeof ApiAdminTelemetrySummaryRoute
   ApiAiChatCompletionsRoute: typeof ApiAiChatCompletionsRoute
 }
 
@@ -621,6 +648,13 @@ declare module '@tanstack/react-router' {
       path: '/docs/mcp'
       fullPath: '/docs/mcp'
       preLoaderRoute: typeof DocsMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telemetry': {
+      id: '/api/telemetry'
+      path: '/api/telemetry'
+      fullPath: '/api/telemetry'
+      preLoaderRoute: typeof ApiTelemetryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/releases': {
@@ -777,6 +811,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiChatCompletionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/telemetry/summary': {
+      id: '/api/admin/telemetry/summary'
+      path: '/api/admin/telemetry/summary'
+      fullPath: '/api/admin/telemetry/summary'
+      preLoaderRoute: typeof ApiAdminTelemetrySummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/reviews/moderate': {
       id: '/api/admin/reviews/moderate'
       path: '/api/admin/reviews/moderate'
@@ -875,6 +916,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReviewsRoute: AdminReviewsRoute,
   ApiChangelogRoute: ApiChangelogRoute,
   ApiReleasesRoute: ApiReleasesRoute,
+  ApiTelemetryRoute: ApiTelemetryRoute,
   DocsMcpRoute: DocsMcpRoute,
   IngestSplatRoute: IngestSplatRoute,
   DocsIndexRoute: DocsIndexRoute,
@@ -893,6 +935,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminLicenseUnrevokeRoute: ApiAdminLicenseUnrevokeRoute,
   ApiAdminReviewsListRoute: ApiAdminReviewsListRoute,
   ApiAdminReviewsModerateRoute: ApiAdminReviewsModerateRoute,
+  ApiAdminTelemetrySummaryRoute: ApiAdminTelemetrySummaryRoute,
   ApiAiChatCompletionsRoute: ApiAiChatCompletionsRoute,
 }
 export const routeTree = rootRouteImport
