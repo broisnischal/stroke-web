@@ -15,6 +15,8 @@ import { Link } from "@tanstack/react-router";
 import {
   BotIcon,
   CheckIcon,
+  CodeIcon,
+  GitPullRequestIcon,
   DatabaseIcon,
   KeyboardIcon,
   LayoutDashboardIcon,
@@ -23,12 +25,13 @@ import {
   PlugIcon,
   SearchIcon,
   TablePropertiesIcon,
+  StarIcon,
   TerminalIcon,
 } from "lucide-react";
 
 import { AppWindow, VideoDemo } from "#/components/app-window";
 import { SmartDownloadButton } from "#/components/download-button";
-import { BrushStroke, SiteFooter, SiteHeader } from "#/components/site-chrome";
+import { BrushStroke, REPO_URL, SiteFooter, SiteHeader } from "#/components/site-chrome";
 import { buttonVariants } from "#/components/ui/button";
 import { useAuth } from "#/lib/auth/hooks";
 import { approvedReviewsQueryOptions } from "#/lib/reviews/functions";
@@ -47,6 +50,7 @@ export function LandingPage() {
         <Reviews />
         <Pricing />
         <Faq />
+        <OpenSource />
         <ClosingCta />
       </main>
       <SiteFooter />
@@ -517,6 +521,87 @@ function Faq() {
           </Link>
           .
         </p>
+      </div>
+    </section>
+  );
+}
+
+function OpenSource() {
+  return (
+    <section id="open-source" className="scroll-mt-16 border-b border-border/40">
+      <div className="mx-auto max-w-4xl px-6 py-14">
+        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+          Open source
+        </p>
+        <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
+          The whole thing is on GitHub.
+        </h2>
+        <div className="mt-4 max-w-2xl space-y-3 text-sm leading-relaxed text-muted-foreground">
+          <p>
+            Every line — the Rust backend, the UI, the Pro features. Stroke holds your database
+            credentials and connects to your production systems, and you should not have to take
+            anybody's word for what it does with them. Read it.
+          </p>
+          <p>
+            Free to use, personally or at work. Not for resale — that is what keeps it funded. If it
+            saves you an afternoon, a star genuinely helps other people find it.
+          </p>
+        </div>
+
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ size: "default" }), "gap-2")}
+          >
+            <StarIcon className="size-4" />
+            Star on GitHub
+          </a>
+          <a
+            href={`${REPO_URL}/blob/master/CONTRIBUTING.md`}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: "outline", size: "default" }), "gap-2")}
+          >
+            <GitPullRequestIcon className="size-4" />
+            Contribute
+          </a>
+          <a
+            href={`${REPO_URL}/issues`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Report a bug
+          </a>
+        </div>
+
+        <ul className="mt-8 grid gap-4 text-sm sm:grid-cols-3">
+          {[
+            {
+              icon: CodeIcon,
+              title: "Read it",
+              body: "Rust and Svelte. Build it yourself in three commands.",
+            },
+            {
+              icon: GitPullRequestIcon,
+              title: "Change it",
+              body: "Bugs, features and docs all welcome — CONTRIBUTING.md has the setup.",
+            },
+            {
+              icon: StarIcon,
+              title: "Star it",
+              body: "The cheapest way to help, and the one that reaches other people.",
+            },
+          ].map((item) => (
+            <li key={item.title} className="rounded-lg border border-border/40 p-4">
+              <item.icon className="size-4 text-muted-foreground" />
+              <p className="mt-3 font-medium">{item.title}</p>
+              <p className="mt-1 leading-relaxed text-muted-foreground">{item.body}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
