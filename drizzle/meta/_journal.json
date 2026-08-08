@@ -64,6 +64,13 @@
       "when": 1784305372461,
       "tag": "0008_worried_sunset_bain",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1786197132853,
+      "tag": "0009_telemetry",
+      "breakpoints": true
     }
   ]
 }
