@@ -8,7 +8,7 @@ working exploit until it is patched.
 
 Report privately through
 [GitHub Security Advisories](https://github.com/broisnischal/stroke-web/security/advisories/new),
-or email **nischal.dahal@aitc.ai**. You will get a first response within 72
+or email **nischaldahal01395@gmail.com**. You will get a first response within 72
 hours.
 
 ## Particularly interested in
