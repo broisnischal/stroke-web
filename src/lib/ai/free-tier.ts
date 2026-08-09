@@ -14,19 +14,40 @@ import { aiUsage, aiUsageGlobal, aiUsageIp } from "#/lib/db/schema";
  * Tune these down first if the bill moves — they are deliberately conservative.
  */
 export const FREE_TIER = {
-  /** Requests one device may make per UTC day. */
-  perDeviceDaily: 30,
+  /**
+   * Requests one device may make per UTC day.
+   *
+   * This is the only limit users were actually hitting, and it was hitting them
+   * for the wrong reason: an agent turn is not one request. Asking a question
+   * that needs three tool round trips spends four. At 30 that is roughly seven
+   * questions a day, which reads as a broken feature rather than a free tier.
+   *
+   * Raising it costs nothing on its own — the global caps below are what gate
+   * the shared pool, and this only decides how much of it one device may take.
+   */
+  perDeviceDaily: 120,
   /** Requests one IP may make per UTC day (a device id can be regenerated). */
-  perIpDaily: 90,
+  perIpDaily: 300,
   /**
    * App-wide Workers AI requests per day. Past this we stop metering Cloudflare
-   * and move to the overflow provider. Keep well under the free neuron
-   * allocation: a tool-calling agent turn is far more expensive than one chat
-   * completion, because each tool round trip is another request.
+   * and move to the overflow provider — nobody is cut off here, they are served
+   * by something else.
+   *
+   * Sized from the free allocation rather than picked: Cloudflare gives 10,000
+   * Neurons per day free and charges $0.011/1,000 after. Measured against
+   * production, a realistic agent turn (70B, tools, a system prompt) costs ~9.5
+   * Neurons and a small chat on the 8B costs ~0.37, so ~1,050 agent turns is
+   * where the free allocation ends. Set it above this and the free tier quietly
+   * starts costing money; below it and we give away allocation we were granted.
    */
-  globalPrimaryDaily: 1_500,
-  /** App-wide overflow requests per day, once the primary cap has tripped. */
-  globalOverflowDaily: 1_500,
+  globalPrimaryDaily: 1_050,
+  /**
+   * App-wide overflow requests per day, once the primary cap has tripped. Twice
+   * the primary cap because this is the only thing between a busy day and a
+   * hard 429 — and unlike the primary path it is somebody else's free pool, so
+   * a high ceiling here costs nothing but their patience.
+   */
+  globalOverflowDaily: 3_000,
 } as const;
 
 /** Model served by the primary (Cloudflare) path. Tool calling is required. */
