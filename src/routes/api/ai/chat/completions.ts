@@ -208,6 +208,53 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
           throw new Error(`all overflow models failed: ${lastDetail}`);
         };
 
+        /**
+         * Book the request, but never at the cost of the answer. The counters
+         * are D1 writes; a D1 hiccup after the model has already replied would
+         * otherwise throw out of the handler and hand the user a bare 500 for a
+         * response that was sitting right there.
+         */
+        const bookUsage = async (p: "primary" | "overflow", inTok?: number, outTok?: number) => {
+          try {
+            await recordUsage({
+              deviceId,
+              ip,
+              day: verdict.day,
+              provider: p,
+              inputTokens: inTok,
+              outputTokens: outTok,
+            });
+          } catch (err) {
+            console.error("free-tier: usage not recorded", err);
+          }
+        };
+
+        /** Hand an overflow provider's response straight through, SSE framing intact. */
+        const passThrough = async (res: Response) => {
+          await bookUsage("overflow");
+          return new Response(res.body, {
+            status: 200,
+            headers: {
+              "content-type":
+                res.headers.get("content-type") ??
+                (stream ? "text/event-stream" : "application/json"),
+              "cache-control": "no-cache",
+              "x-stroke-provider": "overflow",
+            },
+          });
+        };
+
+        const unavailable = () =>
+          Response.json(
+            {
+              error: {
+                code: "upstream_unavailable",
+                message: "The free AI service is temporarily unavailable.",
+              },
+            },
+            { status: 502 },
+          );
+
         // A provider that errors must not burn the user's daily allowance, so
         // usage is booked only after one of them accepts the request.
         let provider = verdict.provider;
@@ -218,17 +265,7 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
         try {
           raw = provider === "primary" ? await runPrimary() : await runOverflow();
         } catch (primaryErr) {
-          if (provider !== "primary") {
-            return Response.json(
-              {
-                error: {
-                  code: "upstream_unavailable",
-                  message: "The free AI service is temporarily unavailable.",
-                },
-              },
-              { status: 502 },
-            );
-          }
+          if (provider !== "primary") return unavailable();
           // Workers AI refused (cold model, capacity, a bad tools payload it
           // won't take). Falling through to overflow keeps the user working
           // instead of handing them a dead assistant.
@@ -237,15 +274,7 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
             provider = "overflow";
           } catch {
             console.error("free-tier: both providers failed", primaryErr);
-            return Response.json(
-              {
-                error: {
-                  code: "upstream_unavailable",
-                  message: "The free AI service is temporarily unavailable.",
-                },
-              },
-              { status: 502 },
-            );
+            return unavailable();
           }
         }
 
@@ -264,17 +293,7 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
               { status: raw.status },
             );
           }
-          await recordUsage({ deviceId, ip, day: verdict.day, provider });
-          return new Response(raw.body, {
-            status: 200,
-            headers: {
-              "content-type":
-                raw.headers.get("content-type") ??
-                (stream ? "text/event-stream" : "application/json"),
-              "cache-control": "no-cache",
-              "x-stroke-provider": provider,
-            },
-          });
+          return await passThrough(raw);
         }
 
         // Everything below is the Workers AI path, which answers in its own shape
@@ -283,38 +302,52 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
 
         let out = raw as ReadableStream;
         if (stream && hasTools) {
-          // A glance, not a gulp. Reading 160 characters before forwarding any of
-          // them cost every tool-enabled turn its streaming — a short answer
-          // arrived in one lump at the end. 24 is enough to tell a printed tool
-          // call from prose, and only an opening that could still become a
-          // refusal is read any further.
-          let peek = await peekStreamHead(out, 24);
-          if (
-            !peek.sawToolCall &&
-            !startsLikeToolCall(peek.head) &&
-            mightBecomeRefusal(peek.head)
-          ) {
-            peek = await peekStreamHead(peek.stream, 160);
-          }
-          if (!peek.sawToolCall && looksLikeToolRefusal(peek.head)) {
-            await peek.stream.cancel().catch(() => {});
-            out = (await runWithoutTools(peek.head)) as ReadableStream;
-          } else if (!peek.sawToolCall && startsLikeToolCall(peek.head)) {
-            // The model is typing its tool call instead of calling it. Buffer the
-            // whole thing — a call has nothing to stream anyway — and hand back a
-            // real one. If it doesn't parse, replay the text as written.
-            // `peek.stream` replays from the first byte, head included: adding
-            // `peek.head` to it would count the opening twice.
-            const text = await collectStreamText(peek.stream);
-            const calls = parseTextToolCalls(text);
-            out = calls ? toolCallStream(calls) : textStream(text);
-          } else {
-            out = peek.stream;
+          try {
+            // A glance, not a gulp. Reading 160 characters before forwarding any
+            // of them cost every tool-enabled turn its streaming — a short answer
+            // arrived in one lump at the end. 24 is enough to tell a printed tool
+            // call from prose, and only an opening that could still become a
+            // refusal is read any further.
+            let peek = await peekStreamHead(out, 24);
+            if (
+              !peek.sawToolCall &&
+              !startsLikeToolCall(peek.head) &&
+              mightBecomeRefusal(peek.head)
+            ) {
+              peek = await peekStreamHead(peek.stream, 160);
+            }
+            if (!peek.sawToolCall && looksLikeToolRefusal(peek.head)) {
+              await peek.stream.cancel().catch(() => {});
+              out = (await runWithoutTools(peek.head)) as ReadableStream;
+            } else if (!peek.sawToolCall && startsLikeToolCall(peek.head)) {
+              // The model is typing its tool call instead of calling it. Buffer
+              // the whole thing — a call has nothing to stream anyway — and hand
+              // back a real one. If it doesn't parse, replay the text as written.
+              // `peek.stream` replays from the first byte, head included: adding
+              // `peek.head` to it would count the opening twice.
+              const text = await collectStreamText(peek.stream);
+              const calls = parseTextToolCalls(text);
+              out = calls ? toolCallStream(calls) : textStream(text);
+            } else {
+              out = peek.stream;
+            }
+          } catch (err) {
+            // The binding accepted the request and then the stream died — a model
+            // that runs out of context part-way through looks exactly like this,
+            // which is why it showed up on long conversations. These awaits are
+            // the last thing between that and an unhandled rejection, and an
+            // unhandled rejection in a Worker reaches the user as a bare 500.
+            console.error("free-tier: primary stream failed after accept", err);
+            try {
+              return await passThrough(await runOverflow());
+            } catch {
+              return unavailable();
+            }
           }
         }
 
         if (stream) {
-          await recordUsage({ deviceId, ip, day: verdict.day, provider });
+          await bookUsage(provider);
           return new Response(toOpenAiStream(out, clientModel), {
             status: 200,
             headers: {
@@ -327,14 +360,24 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
         }
 
         let result = raw;
-        if (hasTools) {
-          const first = toOpenAiCompletion(result, clientModel).choices[0];
-          if (!first.message.tool_calls && looksLikeToolRefusal(first.message.content)) {
-            result = await runWithoutTools(first.message.content ?? "");
+        let completion;
+        try {
+          if (hasTools) {
+            const first = toOpenAiCompletion(result, clientModel).choices[0];
+            if (!first.message.tool_calls && looksLikeToolRefusal(first.message.content)) {
+              result = await runWithoutTools(first.message.content ?? "");
+            }
+          }
+          completion = toOpenAiCompletion(result, clientModel);
+        } catch (err) {
+          console.error("free-tier: primary result could not be translated", err);
+          try {
+            return await passThrough(await runOverflow());
+          } catch {
+            return unavailable();
           }
         }
 
-        const completion = toOpenAiCompletion(result, clientModel);
         // Same recovery on the non-streaming path: a printed call is still a call.
         const printed = completion.choices[0].message.tool_calls
           ? null
@@ -355,14 +398,11 @@ export const Route = createFileRoute("/api/ai/chat/completions")({
             finish_reason: "tool_calls",
           };
         }
-        await recordUsage({
-          deviceId,
-          ip,
-          day: verdict.day,
+        await bookUsage(
           provider,
-          inputTokens: completion.usage.prompt_tokens,
-          outputTokens: completion.usage.completion_tokens,
-        });
+          completion.usage.prompt_tokens,
+          completion.usage.completion_tokens,
+        );
         return Response.json(completion, {
           headers: {
             "x-stroke-provider": provider,

@@ -19,11 +19,21 @@
  * object, then answers "your input is not sufficient / not properly formatted"
  * — a confusing refusal that looks like a broken assistant rather than a
  * format mismatch. Tool results and multi-part messages both hit this.
+ *
+ * `null` is the same trap wearing a different hat, and it was the expensive one.
+ * OpenAI spells an assistant message that ONLY calls a tool as
+ * `{ role: "assistant", content: null, tool_calls: [...] }`, so every agent turn
+ * after the first tool call carried a null. Workers AI rejects it outright, the
+ * request fell through to the overflow pool, and the desktop agent quietly spent
+ * the whole conversation on a slow free model that answers in 10-30s and fails
+ * outright when its four slugs are all rate-limited. `""` is the same message to
+ * the model and the binding accepts it.
  */
 export function normalizeMessages(messages: unknown[]): unknown[] {
   return messages.map((m) => {
     const msg = m as { role?: string; content?: unknown };
-    if (typeof msg.content === "string" || msg.content == null) return m;
+    if (msg.content == null) return { ...msg, content: "" };
+    if (typeof msg.content === "string") return m;
 
     if (Array.isArray(msg.content)) {
       const text = msg.content
